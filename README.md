@@ -7,6 +7,6 @@ Use `/bid` to show/hide the draggable placement frame.
 
 
 TODO:
-[ ] Close/disable frames when a Loot Session ends
-[ ] Set the minimum bid (1 by default) if set by the Master Looter
-[ ] YOUR IDEA HERE
+- [ ] Close/disable frames when a Loot Session ends
+- [ ] Set the minimum bid (1 by default) if set by the Master Looter
+- [ ] YOUR IDEA HERE
