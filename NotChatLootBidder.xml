@@ -1,0 +1,362 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+  <GameTooltip name="BidFrameTooltip" inherits="GameTooltipTemplate" parent="UIParent" hidden="false"/>
+  <Frame name="BidFrameTemplate" virtual="true" enableMouse="true" hidden="true">
+    <Size>
+      <AbsDimension x="412" y="128"/>
+    </Size>
+    <Anchors>
+      <Anchor point="TOP">
+        <Offset>
+          <AbsDimension x="0" y="0"/>
+        </Offset>
+      </Anchor>
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background"
+              edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+      <BackgroundInsets>
+        <AbsInset left="11" right="12" top="12" bottom="11"/>
+      </BackgroundInsets>
+      <TileSize>
+        <AbsValue val="32"/>
+      </TileSize>
+      <EdgeSize>
+        <AbsValue val="32"/>
+      </EdgeSize>
+    </Backdrop>
+    <Frames>
+			<EditBox name="$parentBid" inherits="InputBoxTemplate" numeric="true" letters="5" autofocus="false">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString inherits="GameFontNormalSmall" text="Bid:" justifyH="RIGHT">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="-10" y="0" />
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Size>
+					<AbsDimension x="24" y="32" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="225" y="-45"/>
+						</Offset>
+					</Anchor>
+				</Anchors>>
+			</EditBox>
+			<EditBox name="$parentNote" inherits="InputBoxTemplate" letters="120" autofocus="false" text="'/bid' to show/hide this frame">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString inherits="GameFontNormalSmall" text="Note:" justifyH="RIGHT">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="-10" y="0" />
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Size>
+					<AbsDimension x="180" y="32" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="50" y="-80"/>
+						</Offset>
+					</Anchor>
+				</Anchors>>
+			</EditBox>
+      <Button name="$parentItemIcon" inherits="UIPanelButtonTemplate" text="">
+        <NormalTexture name="$parentNormalTexture" file="Interface\Icons\inv_staff_08">
+          <Size>
+            <AbsDimension x="40" y="40"/>
+          </Size>
+          <Anchors>
+            <Anchor point="CENTER">
+              <Offset>
+                <AbsDimension x="0" y="0"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </NormalTexture>
+        <PushedTexture name="$parentNormalTexture" file="Interface\Icons\inv_staff_08">
+          <Size>
+            <AbsDimension x="40" y="40"/>
+          </Size>
+          <Anchors>
+            <Anchor point="CENTER">
+              <Offset>
+                <AbsDimension x="0" y="0"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </PushedTexture>
+        <DisabledTexture name="$parentNormalTexture" file="Interface\Icons\inv_staff_08">
+          <Size>
+            <AbsDimension x="40" y="40"/>
+          </Size>
+          <Anchors>
+            <Anchor point="CENTER">
+              <Offset>
+                <AbsDimension x="0" y="0"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </DisabledTexture>
+        <HighlightTexture inherits=""/>
+        <Size>
+          <AbsDimension x="40" y="40"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="24" y="-30"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString name="$parentItemName" inherits="GameFontNormal" text="&gt; Drag Me for Placement &lt;" hidden="false" justifyH="LEFT">
+              <Anchors>
+                <Anchor point="LEFT">
+                  <Offset>
+                    <AbsDimension x="50" y="-1"/>
+                  </Offset>
+                </Anchor>
+              </Anchors>
+              <Size>
+                <AbsDimension x="135" y="37"/>
+              </Size>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Scripts>
+          <OnEnter>
+            NeedFrameTooltip:SetOwner(this, "ANCHOR_RIGHT", 0, 0);
+            NeedFrameTooltip:SetHyperlink(this:GetParent().itemLinkInfo);
+            NeedFrameTooltip:Show();
+          </OnEnter>
+          <OnLeave>NeedFrameTooltip:Hide()</OnLeave>
+          <OnClick></OnClick>
+        </Scripts>
+      </Button>
+      <Button name="$parentMSButton" hidden="false" inherits="UIPanelButtonTemplate" text="">
+        <NormalTexture file="Interface\Addons\NotChatLootBidder\images\ms_icon">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </NormalTexture>
+        <PushedTexture file="Interface\Addons\NotChatLootBidder\images\ms_icon_highlight">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </PushedTexture>
+        <HighlightTexture file="Interface\Addons\NotChatLootBidder\images\ms_icon_highlight">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </HighlightTexture>
+        <DisabledTexture inherits=""/>
+        <Size>
+          <AbsDimension x="36" y="36"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="268" y="-40"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString name="$parentName" inherits="GameFontNormal" text="MS" hidden="false">
+              <Anchors>
+                <Anchor point="BOTTOM">
+                  <Offset>
+                    <AbsDimension x="0" y="-18"/>
+                  </Offset>
+                </Anchor>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Button>
+      <Button name="$parentOSButton" hidden="false" inherits="UIPanelButtonTemplate" text="">
+        <NormalTexture file="Interface\Addons\NotChatLootBidder\images\os_icon">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </NormalTexture>
+        <PushedTexture file="Interface\Addons\NotChatLootBidder\images\os_icon_highlight">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </PushedTexture>
+        <HighlightTexture file="Interface\Addons\NotChatLootBidder\images\os_icon_highlight">
+          <Size x="64" y="64"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </HighlightTexture>
+        <DisabledTexture inherits=""/>
+        <Size>
+          <AbsDimension x="36" y="36"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="305" y="-40"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString name="$parentName" inherits="GameFontNormal" text="OS" hidden="false">
+              <Anchors>
+                <Anchor point="BOTTOM">
+                  <Offset>
+                    <AbsDimension x="0" y="-18"/>
+                  </Offset>
+                </Anchor>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Button>
+      <Button name="$parentROLLButton" hidden="false" inherits="UIPanelButtonTemplate" text="">
+        <NormalTexture file="Interface\Buttons\UI-GroupLoot-Dice-Highlight">
+          <Size x="36" y="36"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </NormalTexture>
+        <PushedTexture file="Interface\Buttons\UI-GroupLoot-Dice-Up">
+          <Size x="36" y="36"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </PushedTexture>
+        <HighlightTexture file="Interface\Buttons\UI-GroupLoot-Dice-Up">
+          <Size x="36" y="36"/>
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset x="0" y="0"/>
+            </Anchor>
+          </Anchors>
+        </HighlightTexture>
+        <DisabledTexture inherits=""/>
+        <Size>
+          <AbsDimension x="36" y="36"/>
+        </Size>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="342" y="-40"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString name="$parentName" inherits="GameFontNormal" text="Roll" hidden="false">
+              <Anchors>
+                <Anchor point="BOTTOM">
+                  <Offset>
+                    <AbsDimension x="0" y="-18"/>
+                  </Offset>
+                </Anchor>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+      </Button>
+      <Button name="$parentPassButton" inherits="UIPanelCloseButton" text="">
+        <Size><AbsDimension x="28" y="28"/></Size>
+        <Anchors><Anchor point="TOPRIGHT"><Offset><AbsDimension x="-8" y="-8"/></Offset></Anchor></Anchors>
+        <Scripts>
+          <OnClick>
+            this:GetParent():Hide();
+          </OnClick>
+        </Scripts>
+      </Button>
+    </Frames>
+  </Frame>
+  <Frame name="NotChatLootBidder_Frame" hidden="false" toplevel="true" parent="UIParent" movable="true" enableMouse="true">
+  <Size><AbsDimension x="412" y="20"/></Size>
+  <Anchors><Anchor point="TOP"><Offset><AbsDimension x="0" y="-64"/></Offset></Anchor></Anchors>
+  <Frames>
+    <Frame name="$parentPlacement" inherits="BidFrameTemplate" hidden="true">
+    <Scripts>
+      <OnLoad>
+        this:RegisterForDrag("LeftButton")
+        this.itemLinkInfo = "item:35::::::::60:::::"
+        getglobal("NotChatLootBidder_FramePlacementNote"):SetText("'/bid' to show/hide this frame")
+      </OnLoad>
+      <OnHide>
+        this:StopMovingOrSizing()
+      </OnHide>
+      <OnDragStart>
+        if arg1 == "LeftButton" then
+          this:SetMovable(true)
+          this:StartMoving()
+        end
+      </OnDragStart>
+      <OnDragStop>
+        this:StopMovingOrSizing()
+        this:GetParent():ClearAllPoints()
+        local point, _, relativePoint, xOfs, yOfs = this:GetPoint()
+        this:GetParent():SetPoint(point, "UIParent", relativePoint, xOfs, yOfs)
+      </OnDragStop>
+      <OnMouseUp>
+        if arg1 == "LeftButton" and this:IsVisible() then
+          this:StopMovingOrSizing()
+          this:SetMovable(false)
+        end
+      </OnMouseUp>
+    </Scripts>
+    </Frame>
+  </Frames>
+   <Scripts>
+    <OnEvent>
+      this[event](arg1,arg2,arg3,arg4)
+    </OnEvent>
+    <OnLoad>
+      this:RegisterEvent("ADDON_LOADED")
+      this:RegisterEvent("CHAT_MSG_ADDON")
+      this:RegisterEvent("PLAYER_ENTERING_WORLD")
+      this:RegisterEvent("PLAYER_LEAVING_WORLD")
+      this:RegisterEvent("PARTY_MEMBERS_CHANGED")
+    </OnLoad>
+   </Scripts>
+  </Frame>
+</Ui>
