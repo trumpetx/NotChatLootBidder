@@ -126,7 +126,7 @@
         </Anchors>
         <Layers>
           <Layer level="OVERLAY">
-            <FontString name="$parentItemName" inherits="GameFontNormal" text="&gt; Drag Me for Placement &lt;" hidden="false" justifyH="LEFT">
+            <FontString name="$parentItemName" inherits="GameFontNormal" text="&gt;Drag Me for Placement&lt;" hidden="false" justifyH="LEFT">
               <Anchors>
                 <Anchor point="LEFT">
                   <Offset>

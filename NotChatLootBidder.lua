@@ -24,7 +24,8 @@ end
 
 local function ShowHelp()
   Message("/bid  - Open the placement frame")
-  Message("/bid [item-link] [item-link2] - Open test bid frames")
+  Message("/bid [item-link] [item-link2]  - Open test bid frames")
+  Message("/bid clear  - Clear all bid frames")
 	Message("/bid info  - Show information about the add-on")
 end
 
@@ -45,6 +46,22 @@ local function ResetFrameStack()
   for _, frame in pairs(needFrames) do
     frame:SetPoint("TOP", NotChatLootBidder, "TOP", 0, frameHeight)
     frameHeight = frameHeight - 128
+  end
+end
+
+local function ClearFrames(fadeTime, masterLooter)
+  for _, f in pairs(needFrames) do
+    local frame = f
+    -- Don't let someone else hijack the frames
+    if masterLooter == nil or frame.masterLooter == masterLooter then
+      local fadeInfo = {};
+      fadeInfo.mode = "OUT";
+      fadeInfo.timeToFade = fadeTime;
+      fadeInfo.startAlpha = 1;
+      fadeInfo.endAlpha = 0;
+      fadeInfo.finishedFunc = function() frame:Hide() end;
+      UIFrameFade(frame, fadeInfo);
+    end
   end
 end
 
@@ -92,7 +109,7 @@ local function LoadBidFrame(item, masterLooter)
   getglobal(frame:GetName() .. "Note"):SetText("")
   getglobal(frame:GetName() .. "Bid"):SetText("")
   ResetFrameStack()
-  frame:Show()
+  UIFrameFadeIn(frame, .5, 0, 1)
 end
 
 local function GetItemLinks(str, start)
@@ -119,6 +136,8 @@ local function InitSlashCommands()
       if placementFrame:IsVisible() then placementFrame:Hide() else placementFrame:Show() end
     elseif commandlist[1] == "help" then
 			ShowHelp()
+    elseif commandlist[1] == "clear" then
+      ClearFrames(.2)
     elseif commandlist[1] == "debug" then
       if commandlist[2] then
         local value = tonumber(commandlist[2])
@@ -146,17 +165,19 @@ function NotChatLootBidder.PARTY_MEMBERS_CHANGED()
   VersionUtil:PARTY_MEMBERS_CHANGED(addonName)
 end
 
-function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage)
+function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, sender)
   if VersionUtil:CHAT_MSG_ADDON(addonName, function(ver)
     Message("New version " .. ver .. " of " .. addonTitle .. " is available! Upgrade now at " .. addonNotes)
   end) then return end
 
   if addonTag == addonName then
     local incomingMessage = VersionUtil:ParseMessage(stringMessage)
-    if incomingMessage["items"] and incomingMessage["sender"] then
+    if incomingMessage["items"] then
       for _, i in GetItemLinks(incomingMessage["items"]) do
-        LoadBidFrame(i, incomingMessage["sender"])
+        LoadBidFrame(i, sender)
       end
+    elseif incomingMessage["endSession"] then
+      ClearFrames(2, sender)
     end
   end
 end

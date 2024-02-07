@@ -17,7 +17,7 @@ local GetAddOnMetadata = GetAddOnMetadata
 local SendAddonMessage = SendAddonMessage
 
 local function SendVersionMessage(addonName, channel, addonVersion)
-	local msg = "sender=" .. VersionUtil.me .. ",version=" .. addonVersion
+	local msg = "sender=" .. VersionUtil.me .. ",version=" .. addonVersion -- TODO: remove sender, is unsed once we get everyone to upgrade
 	if VersionUtil.debug then print("Sending: [" .. msg .. "] to " .. channel) end
   if ChatThrottleLib then
     ChatThrottleLib:SendAddonMessage("BULK", addonName, msg, channel)
@@ -107,10 +107,12 @@ end
 -- @param addonName required, should match the same name used for other handlers
 -- @param upgradeMessageFunction an optional function(newVersion) to be called if an upgrade is detected [default: function(ver) DEFAULT_CHAT_FRAME:AddMessage("New version " .. ver .. " of " .. addonName .. " is available!") end]
 -- @param stringMessage an optional override of the comma separated key value pair list with equal signs separating the keys and values [default: arg2 global value]
+-- @param sender an optional override of the sender of the message [default: arg4 global value]
 -- @return true if the message is a version message and it was handled; false if it was not a version message or was not handled
-function VersionUtil:CHAT_MSG_ADDON(addonName, upgradeMessageFunction, stringMessage)
+function VersionUtil:CHAT_MSG_ADDON(addonName, upgradeMessageFunction, stringMessage, sender)
   if arg1 ~= addonName then return false end -- arg1 is global of the 'tag' sent by the addon
   if stringMessage == nil then stringMessage = arg2 end -- arg2 is the global of the message received
+  if sender == nil then sender = arg4 end -- arg4 is the sender of the message
   local addonVersion = GetAddonVersion(addonName)
   if addonVersion == nil then
     DEFAULT_CHAT_FRAME:AddMessage("|cffff0000 Your Add-On needs to provide the Addon Name which corresponds with the .toc file name (ADDONNAME.toc) for VersionUtil:CHAT_MSG_ADDON(addonName, message)")
@@ -118,12 +120,12 @@ function VersionUtil:CHAT_MSG_ADDON(addonName, upgradeMessageFunction, stringMes
   end
   local message = VersionUtil:ParseMessage(stringMessage)
   if message["version"] == nil then return false end -- This is not a version message
-  if message["sender"] == VersionUtil.me then return true end -- Ignore my own sends
+  if sender == VersionUtil.me then return true end -- Ignore my own sends
   if SemverCompare(message["version"], addonVersion) <= 0 then
-    if VersionUtil.debug then print(message["sender"] .. " has version " .. message["version"]) end
+    if VersionUtil.debug then print(sender .. " has version " .. message["version"]) end
     return true
   end
-  if VersionUtil.debug then print("I have version " .. addonVersion .. " and " .. message["sender"] .. " has version " .. message["version"]) end
+  if VersionUtil.debug then print("I have version " .. addonVersion .. " and " .. sender .. " has version " .. message["version"]) end
   if not VersionUtil.upgradeMessageShown[addonName] then
     if upgradeMessageFunction == nil then
       upgradeMessageFunction = function(ver) DEFAULT_CHAT_FRAME:AddMessage("New version " .. ver .. " of " .. addonName .. " is available!") end
