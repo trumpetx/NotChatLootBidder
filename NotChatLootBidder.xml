@@ -142,11 +142,11 @@
         </Layers>
         <Scripts>
           <OnEnter>
-            NeedFrameTooltip:SetOwner(this, "ANCHOR_RIGHT", 0, 0);
-            NeedFrameTooltip:SetHyperlink(this:GetParent().itemLinkInfo);
-            NeedFrameTooltip:Show();
+            BidFrameTooltip:SetOwner(this, "ANCHOR_RIGHT", 0, 0);
+            BidFrameTooltip:SetHyperlink(this:GetParent().itemLinkInfo);
+            BidFrameTooltip:Show();
           </OnEnter>
-          <OnLeave>NeedFrameTooltip:Hide()</OnLeave>
+          <OnLeave>BidFrameTooltip:Hide()</OnLeave>
           <OnClick></OnClick>
         </Scripts>
       </Button>
