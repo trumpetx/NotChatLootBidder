@@ -5,7 +5,7 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 ```
   /bid  - Open the placement frame
   /bid [item-link] [item-link2]  - Open test bid frames
-  /bid scale [10-100]  - Set the UI scale percentage
+  /bid scale [50-150]  - Set the UI scale percentage
   /bid ignore  - List all ignored items
   /bid ignore clear - Clear the ignore list completely
   /bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)
