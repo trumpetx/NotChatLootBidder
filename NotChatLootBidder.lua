@@ -35,7 +35,7 @@ end
 local function ShowHelp()
   Message("/bid  - Open the placement frame")
   Message("/bid [item-link] [item-link2]  - Open test bid frames")
-  Message("/bid scale [10-100]  - Set the UI scale percentage")
+  Message("/bid scale [50-150]  - Set the UI scale percentage")
   Message("/bid ignore  - List all ignored items")
   Message("/bid ignore clear - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
