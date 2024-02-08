@@ -21,7 +21,7 @@ local function LoadVariables()
   NotChatLootBidder_Store = NotChatLootBidder_Store or {}
   NotChatLootBidder_Store.Version = addonVersion
   NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
-  NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or .8
+  NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
 end
 
 local function Error(message)
