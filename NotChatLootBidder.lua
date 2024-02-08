@@ -1,5 +1,4 @@
 local NotChatLootBidder = NotChatLootBidder_Frame
-local placementFrame = getglobal("NotChatLootBidder_FramePlacement")
 local gfind = string.gmatch or string.gfind
 local addonName = "NotChatLootBidder"
 local addonTitle = GetAddOnMetadata(addonName, "Title")
@@ -13,9 +12,20 @@ local maxFrames = 6
 local needFrames = {}
 local itemRegex = "|c.-|H.-|h|r"
 
+local function IsTableEmpty(table)
+  local next = next
+  return next(table) == nil
+end
+
 local function LoadVariables()
   NotChatLootBidder_Store = NotChatLootBidder_Store or {}
   NotChatLootBidder_Store.Version = addonVersion
+  NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
+  NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or .8
+end
+
+local function Error(message)
+	DEFAULT_CHAT_FRAME:AddMessage("|cffbe5eff" .. chatPrefix .. "|cffff0000 "..message)
 end
 
 local function Message(message)
@@ -25,12 +35,16 @@ end
 local function ShowHelp()
   Message("/bid  - Open the placement frame")
   Message("/bid [item-link] [item-link2]  - Open test bid frames")
+  Message("/bid scale [10-100]  - Set the UI scale percentage")
+  Message("/bid ignore  - List all ignored items")
+  Message("/bid ignore clear - Clear the ignore list completely")
+  Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
   Message("/bid clear  - Clear all bid frames")
 	Message("/bid info  - Show information about the add-on")
 end
 
 local function ShowInfo()
-	if NotChatLootBidder_Store.DebugLevel > 0 then Message("Debug Level set to " .. NotChatLootBidder_Store.DebugLevel) end
+  Message("UI Scale is set to " .. NotChatLootBidder_Store.UIScale * 100 .. "%")
 	Message(addonNotes .. " for bugs and suggestions")
 	Message("Written by " .. addonAuthor)
 end
@@ -46,6 +60,7 @@ local function ResetFrameStack()
   for _, frame in pairs(needFrames) do
     frame:SetPoint("TOP", NotChatLootBidder, "TOP", 0, frameHeight)
     frameHeight = frameHeight - 128
+    frame:SetScale(NotChatLootBidder_Store.UIScale * UIParent:GetScale())
   end
 end
 
@@ -124,6 +139,40 @@ local function GetItemLinks(str, start)
   end
 end
 
+local function ListIgnored(message)
+  if IsTableEmpty(NotChatLootBidder_Store.IgnoredItems) then
+    Message("No items are ignored")
+    return
+  end
+  Message("The following items are ignored:")
+  for item,_ in pairs(NotChatLootBidder_Store.IgnoredItems) do
+    Message(item)
+  end
+end
+
+local function ToggleIgnore(message)
+  local ignoredItems = NotChatLootBidder_Store.IgnoredItems
+  for _, item in GetItemLinks(message) do
+    if ignoredItems[item] then
+      ignoredItems[item] = nil
+      Message(item .. " is no longer ignored")
+    else
+      ignoredItems[item] = true
+      Message(item .. " is now ignored")
+    end
+  end
+end
+
+local function TogglePlacementFrame()
+  local placementFrame = getglobal("NotChatLootBidder_FramePlacement")
+  if placementFrame:IsVisible() then
+    placementFrame:Hide()
+  else
+    placementFrame:SetScale(NotChatLootBidder_Store.UIScale * UIParent:GetScale())
+    placementFrame:Show()
+  end
+end
+
 local function InitSlashCommands()
 	SLASH_NotChatLootBidder1 = "/bid"
 	SlashCmdList[addonName] = function(message)
@@ -133,20 +182,36 @@ local function InitSlashCommands()
 			table.insert(commandlist, command)
 		end
     if commandlist[1] == nil then
-      if placementFrame:IsVisible() then placementFrame:Hide() else placementFrame:Show() end
+      TogglePlacementFrame()
     elseif commandlist[1] == "help" then
 			ShowHelp()
+    elseif commandlist[1] == "info" then
+			ShowInfo()
     elseif commandlist[1] == "clear" then
       ClearFrames(.2)
-    elseif commandlist[1] == "debug" then
-      if commandlist[2] then
-        local value = tonumber(commandlist[2])
-        if value then NotChatLootBidder_Store.DebugLevel = value end
+    elseif commandlist[1] == "ignore" then
+      if commandlist[2] == "clear" then
+        NotChatLootBidder_Store.IgnoredItems = {}
+        Message("The ignore list has been cleared!")
+      elseif commandlist[2] ~= nil then
+        ToggleIgnore(message)
+      else
+        ListIgnored()
       end
-      Message("Debug level set to " .. NotChatLootBidder_Store.DebugLevel)
+    elseif commandlist[1] == "scale" then
+      local scale = tonumber(commandlist[2] or "")
+      if scale ~= nil and scale >= 50 and scale <= 150 then scale = scale / 100 end -- convert whole numbers into decimal %
+      if scale == nil or scale > 1.5 or scale < .5 then
+        Error("Invalid scale value.  Use a number between 50 and 150.")
+      else
+        NotChatLootBidder_Store.UIScale = scale
+        NotChatLootBidder.UI_SCALE_CHANGED()
+      end
     else
       for _, i in GetItemLinks(message) do
-        LoadBidFrame(i, me)
+        if NotChatLootBidder_Store.IgnoredItems[i] == nil then
+          LoadBidFrame(i, me)
+        end
       end
     end
   end
@@ -187,7 +252,7 @@ function NotChatLootBidder.PLAYER_ENTERING_WORLD()
   if NotChatLootBidder_Store.Point and getn(NotChatLootBidder_Store.Point) == 4 then
     NotChatLootBidder:SetPoint(NotChatLootBidder_Store.Point[1], "UIParent", NotChatLootBidder_Store.Point[2], NotChatLootBidder_Store.Point[3], NotChatLootBidder_Store.Point[4])
   else
-    placementFrame:Show()
+    TogglePlacementFrame()
   end
   this:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
@@ -195,4 +260,10 @@ end
 function NotChatLootBidder.PLAYER_LEAVING_WORLD()
   local point, _, relativePoint, xOfs, yOfs = NotChatLootBidder:GetPoint()
   NotChatLootBidder_Store.Point = {point, relativePoint, xOfs, yOfs}
+end
+
+function NotChatLootBidder.UI_SCALE_CHANGED()
+  TogglePlacementFrame()
+  TogglePlacementFrame()
+  ResetFrameStack()
 end

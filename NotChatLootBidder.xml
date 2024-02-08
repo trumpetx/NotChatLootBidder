@@ -356,6 +356,7 @@
       this:RegisterEvent("PLAYER_ENTERING_WORLD")
       this:RegisterEvent("PLAYER_LEAVING_WORLD")
       this:RegisterEvent("PARTY_MEMBERS_CHANGED")
+      this:RegisterEvent("UI_SCALE_CHANGED")
     </OnLoad>
    </Scripts>
   </Frame>
