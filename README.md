@@ -10,7 +10,7 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
   /bid ignore clear - Clear the ignore list completely
   /bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)
   /bid clear  - Clear all bid frames
-	/bid info  - Show information about the add-on
+  /bid info  - Show information about the add-on
   /bid help  - Show this message again
 ```
 
