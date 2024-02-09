@@ -6,11 +6,30 @@ local addonNotes = GetAddOnMetadata(addonName, "Notes")
 local addonVersion = GetAddOnMetadata(addonName, "Version")
 local addonAuthor = GetAddOnMetadata(addonName, "Author")
 local me = UnitName("player")
+local myClass, myCLASS = UnitClass("player")
 local chatPrefix = "<BID> "
 local frameId = 0
 local maxFrames = 6
 local needFrames = {}
 local itemRegex = "|c.-|H.-|h|r"
+local useable = {
+  ["Priest"] = { "One-Handed Maces", "Staves", "Daggers", "Wands" },
+  ["Mage"] = { "One-Handed Swords", "Staves", "Daggers", "Wands" },
+  ["Warlock"] = { "One-Handed Swords", "Staves", "Daggers", "Wands" },
+  ["Rogue"] = { "Leather", "Daggers", "One-Handed Swords", "One-Handed Maces", "Fist Weapons", "Bows", "Crossbows", "Guns", "Thrown", "Arrow", "Bullet" },
+  ["Druid"] = { "Leather", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Staves", "Daggers", "Fist Weapons", "Idols" },
+  ["Hunter"] = { "Leather", "Mail",  "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "Polearms", "Staves", "Daggers", "Fist Weapons", "Bows", "Crossbows", "Guns", "Arrow", "Bullet" },
+  ["Shaman"] = { "Leather", "Mail", "One-Handed Axes", "Two-Handed Axes", "One-Handed Maces", "Two-Handed Maces", "Staves", "Daggers", "Fist Weapons", "Shield", "Totems" },
+  ["Warrior"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Staves", "Daggers", "Fist Weapons", "Shield", "Bows", "Crossbows", "Guns", "Thrown", "Arrow", "Bullet" },
+  ["Paladin"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Shield", "Librams" },
+  ["All"] = { "Trade Goods", "Junk", "Bag", "Miscellaneous", "Quest", "Consumable", "Cloth" }
+}
+-- convert useable arrays into sets
+for k, v in pairs(useable) do
+  local v2k = {}
+  for _, v2 in pairs(v) do v2k[v2] = true end
+  useable[k] = v2k
+end
 
 local function IsTableEmpty(table)
   local next = next
@@ -21,6 +40,7 @@ local function LoadVariables()
   NotChatLootBidder_Store = NotChatLootBidder_Store or {}
   NotChatLootBidder_Store.Version = addonVersion
   NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
+  NotChatLootBidder_Store.AutoIgnore = NotChatLootBidder_Store.AutoIgnore == true
   NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
 end
 
@@ -36,6 +56,7 @@ local function ShowHelp()
   Message("/bid  - Open the placement frame")
   Message("/bid [item-link] [item-link2]  - Open test bid frames")
   Message("/bid scale [50-150]  - Set the UI scale percentage")
+  Message("/bid autoignore  - Toggle 'auto-ignore' mode to ignore items your class cannot use")
   Message("/bid ignore  - List all ignored items")
   Message("/bid ignore clear - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
@@ -109,9 +130,41 @@ local function CreateBidFrame(bidFrameId)
   return frame
 end
 
+local function UseableItem(itemLinkInfo, itemSubType)
+  if itemLinkInfo then -- some items like mounts may not have linkInfo provided by the client
+    BidFrameInfoTooltip:ClearLines()
+    BidFrameInfoTooltip:SetOwner(NotChatLootBidder, "NONE", 0, 0)
+    BidFrameInfoTooltip:SetHyperlink(itemLinkInfo)
+    BidFrameInfoTooltip:Show()
+    for i=1, BidFrameInfoTooltip:NumLines() do
+      local text = getglobal("BidFrameInfoTooltipTextLeft"..i):GetText()
+      local _, _, match = string.find(text, "Classes: (.+)")
+      -- If classes are set on the item, it is definitive
+      if match then
+        BidFrameInfoTooltip:Hide()
+        if string.find(match, myClass) then
+          return true
+        else
+          return false
+        end
+      end
+    end
+    BidFrameInfoTooltip:Hide()
+  end
+  if itemSubType == nil or useable["All"][itemSubType] == true then
+    return true
+  end
+  -- print("Checking item sub type: " .. itemSubType)
+  return useable[myClass][itemSubType] == true
+end
+
 local function LoadBidFrame(item, masterLooter)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
   local itemName, itemLinkInfo, itemRarity, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
+  if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType) then
+    -- print("Ignoring " .. itemName)
+    return
+  end
   local bidFrameId = NextFrameId()
   local frame = getglobal("BidFrame" .. bidFrameId) or CreateBidFrame(bidFrameId)
   frame.itemLink = item
@@ -119,8 +172,8 @@ local function LoadBidFrame(item, masterLooter)
   frame.masterLooter = masterLooter
   needFrames[bidFrameId] = frame
   getglobal(frame:GetName() .. "ItemIconItemName"):SetText(item)
-  getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture)
-  getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture)
+  getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
+  getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   getglobal(frame:GetName() .. "Note"):SetText("")
   getglobal(frame:GetName() .. "Bid"):SetText("")
   ResetFrameStack()
@@ -189,6 +242,9 @@ local function InitSlashCommands()
 			ShowInfo()
     elseif commandlist[1] == "clear" then
       ClearFrames(.2)
+    elseif commandlist[1] == "autoignore" then
+      NotChatLootBidder_Store.AutoIgnore = not NotChatLootBidder_Store.AutoIgnore
+      Message("Auto-ignore mode is " .. (NotChatLootBidder_Store.AutoIgnore and "enabled" or "disabled"))
     elseif commandlist[1] == "ignore" then
       if commandlist[2] == "clear" then
         NotChatLootBidder_Store.IgnoredItems = {}
