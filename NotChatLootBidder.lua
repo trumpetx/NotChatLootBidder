@@ -151,7 +151,7 @@ local function UseableItem(itemLinkInfo, itemSubType)
     end
     BidFrameInfoTooltip:Hide()
   end
-  if itemSubType == nil or useable["All"][itemSubType] == true then
+  if itemSubType == nil or itemSubType == "" or useable["All"][itemSubType] == true then
     return true
   end
   -- print("Checking item sub type: " .. itemSubType)
