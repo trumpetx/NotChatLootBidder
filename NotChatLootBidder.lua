@@ -167,6 +167,7 @@ local function LoadBidFrame(item, masterLooter)
   end
   local bidFrameId = NextFrameId()
   local frame = getglobal("BidFrame" .. bidFrameId) or CreateBidFrame(bidFrameId)
+  if frame:IsVisible() then Error("More than " .. maxFrames .. " bid frames loaded.  Overwriting " .. frame.itemLink .. " (" .. bidFrameId .. ")") end
   frame.itemLink = item
   frame.itemLinkInfo = itemLinkInfo
   frame.masterLooter = masterLooter
