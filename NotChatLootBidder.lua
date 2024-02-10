@@ -58,7 +58,7 @@ local function ShowHelp()
   Message("/bid scale [50-150]  - Set the UI scale percentage")
   Message("/bid autoignore  - Toggle 'auto-ignore' mode to ignore items your class cannot use")
   Message("/bid ignore  - List all ignored items")
-  Message("/bid ignore clear - Clear the ignore list completely")
+  Message("/bid ignore clear  - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
   Message("/bid clear  - Clear all bid frames")
 	Message("/bid info  - Show information about the add-on")
@@ -158,7 +158,7 @@ local function UseableItem(itemLinkInfo, itemSubType)
   return useable[myClass][itemSubType] == true
 end
 
-local function LoadBidFrame(item, masterLooter)
+local function LoadBidFrame(item, masterLooter, minimumBid)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
   local itemName, itemLinkInfo, itemRarity, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
   if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType) then
@@ -171,6 +171,7 @@ local function LoadBidFrame(item, masterLooter)
   frame.itemLink = item
   frame.itemLinkInfo = itemLinkInfo
   frame.masterLooter = masterLooter
+  frame.minimumBid = minimumBid or 1
   needFrames[bidFrameId] = frame
   getglobal(frame:GetName() .. "ItemIconItemName"):SetText(item)
   getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
@@ -295,8 +296,9 @@ function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, send
   if addonTag == addonName then
     local incomingMessage = VersionUtil:ParseMessage(stringMessage)
     if incomingMessage["items"] then
+      local minimumBid = incomingMessage["minimumBid"] -- optional: defaults to 1
       for _, i in GetItemLinks(incomingMessage["items"]) do
-        LoadBidFrame(i, sender)
+        LoadBidFrame(i, sender, minimumBid)
       end
     elseif incomingMessage["endSession"] then
       ClearFrames(2, sender)
