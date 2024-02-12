@@ -1,8 +1,8 @@
 VERSION_UTIL_VERSION = 1
 
-if VersionUtil and VersionUtil.version >= VERSION_UTIL_VERSION then return end
+if VersionUtil and (VersionUtil.version >= VERSION_UTIL_VERSION) then return end
 VersionUtil = {}
-
+VersionUtil.version = VERSION_UTIL_VERSION
 VersionUtil.loginchannels = { "BATTLEGROUND", "RAID", "PARTY", "GUILD" }
 VersionUtil.groupchannels = { "BATTLEGROUND", "RAID", "PARTY" }
 VersionUtil.debug = false
