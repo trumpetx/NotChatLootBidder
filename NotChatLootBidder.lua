@@ -19,9 +19,9 @@ local useable = {
   ["Rogue"] = { "Leather", "Daggers", "One-Handed Swords", "One-Handed Maces", "Fist Weapons", "Bows", "Crossbows", "Guns", "Thrown", "Arrow", "Bullet" },
   ["Druid"] = { "Leather", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Staves", "Daggers", "Fist Weapons", "Idols" },
   ["Hunter"] = { "Leather", "Mail",  "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "Polearms", "Staves", "Daggers", "Fist Weapons", "Bows", "Crossbows", "Guns", "Arrow", "Bullet" },
-  ["Shaman"] = { "Leather", "Mail", "One-Handed Axes", "Two-Handed Axes", "One-Handed Maces", "Two-Handed Maces", "Staves", "Daggers", "Fist Weapons", "Shield", "Totems" },
-  ["Warrior"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Staves", "Daggers", "Fist Weapons", "Shield", "Bows", "Crossbows", "Guns", "Thrown", "Arrow", "Bullet" },
-  ["Paladin"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Shield", "Librams" },
+  ["Shaman"] = { "Leather", "Mail", "One-Handed Axes", "Two-Handed Axes", "One-Handed Maces", "Two-Handed Maces", "Staves", "Daggers", "Fist Weapons", "Shields", "Totems" },
+  ["Warrior"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Staves", "Daggers", "Fist Weapons", "Shields", "Bows", "Crossbows", "Guns", "Thrown", "Arrow", "Bullet" },
+  ["Paladin"] = { "Leather", "Mail", "Plate", "One-Handed Axes", "Two-Handed Axes", "One-Handed Swords", "Two-Handed Swords", "One-Handed Maces", "Two-Handed Maces", "Polearms", "Shields", "Librams" },
   ["All"] = { "Trade Goods", "Junk", "Bag", "Miscellaneous", "Quest", "Consumable", "Cloth" }
 }
 -- convert useable arrays into sets
@@ -142,11 +142,7 @@ local function UseableItem(itemLinkInfo, itemSubType)
       -- If classes are set on the item, it is definitive
       if match then
         BidFrameInfoTooltip:Hide()
-        if string.find(match, myClass) then
-          return true
-        else
-          return false
-        end
+        return string.find(match, myClass)
       end
     end
     BidFrameInfoTooltip:Hide()
