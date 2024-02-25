@@ -293,7 +293,7 @@ function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, send
     local incomingMessage = VersionUtil:ParseMessage(stringMessage)
     if incomingMessage["items"] then
       local minimumBid = incomingMessage["minimumBid"] -- optional: defaults to 1
-      for _, i in GetItemLinks(incomingMessage["items"]) do
+      for _, i in GetItemLinks(string.gsub(incomingMessage["items"], "~~~", ",")) do
         LoadBidFrame(i, sender, minimumBid)
       end
     elseif incomingMessage["endSession"] then
