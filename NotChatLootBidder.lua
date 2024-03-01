@@ -7,6 +7,7 @@ local addonVersion = GetAddOnMetadata(addonName, "Version")
 local addonAuthor = GetAddOnMetadata(addonName, "Author")
 local me = UnitName("player")
 local myClass, myCLASS = UnitClass("player")
+local myRace, _ = UnitRace("player")
 local chatPrefix = "<BID> "
 local frameId = 0
 local maxFrames = 8
@@ -130,7 +131,17 @@ local function CreateBidFrame(bidFrameId)
   return frame
 end
 
-local function UseableItem(itemLinkInfo, itemSubType)
+local function IsAlliance()
+  return myRace == "Gnome" or myRace == "Dwarf" or myRace == "Human" or myRace == "Night Elf" or myRace == "High Elf"
+end
+
+local function UseableItem(itemLinkInfo, itemSubType, itemName)
+  -- Onyxia/Nefarian heads for Twow
+  if itemName ~= nil and string.find(itemName, "(Alliance)") then
+    return IsAlliance()
+  elseif itemName ~= nil and string.find(itemName, "(Horde)") then
+    return not IsAlliance()
+  end
   if itemLinkInfo then -- some items like mounts may not have linkInfo provided by the client
     BidFrameInfoTooltip:ClearLines()
     BidFrameInfoTooltip:SetOwner(NotChatLootBidder, "NONE", 0, 0)
@@ -157,7 +168,12 @@ end
 local function LoadBidFrame(item, masterLooter, minimumBid)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
   local itemName, itemLinkInfo, itemRarity, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
-  if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType) then
+  if itemLinkInfo == nil then
+    -- This is a potentially unsafe operation and may cause disconnects according to API documentation
+    -- No disconnects noticed in testing on twow's client
+    itemLinkInfo = itemKey
+  end
+  if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType, itemName) then
     -- print("Ignoring " .. itemName)
     return
   end
