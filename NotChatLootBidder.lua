@@ -110,12 +110,12 @@ local function CreateBidFrame(bidFrameId)
     getglobal(bidFrameName .. tier .."Button"):SetScript("OnClick", function()
       local f = this:GetParent()
       local amt = getglobal(f:GetName() .. "Bid"):GetText()
-      if tier == "ROLL" then
+      if tier == "ROLL" or frame.mode ~= "DKP" then
         amt = ""
       else
         amt = tonumber(amt)
         if amt == nil then return end
-        if amt < 1 then return end -- TODO: replace with min bid from ML addon
+        if amt < frame.minimumBid then return end
       end
       local note = string.gsub(getglobal(f:GetName() .. "Note"):GetText(), "^%s*(.-)%s*$", "%1")
       if string.len(note) > 0 then note = " " .. note end
@@ -165,7 +165,7 @@ local function UseableItem(itemLinkInfo, itemSubType, itemName)
   return useable[myClass][itemSubType] == true
 end
 
-local function LoadBidFrame(item, masterLooter, minimumBid)
+local function LoadBidFrame(item, masterLooter, minimumBid, mode)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
   local itemName, itemLinkInfo, itemRarity, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
   if itemLinkInfo == nil then
@@ -184,12 +184,19 @@ local function LoadBidFrame(item, masterLooter, minimumBid)
   frame.itemLinkInfo = itemLinkInfo
   frame.masterLooter = masterLooter
   frame.minimumBid = minimumBid or 1
+  frame.mode = mode or "DKP"
   needFrames[bidFrameId] = frame
   getglobal(frame:GetName() .. "ItemIconItemName"):SetText(item)
   getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   getglobal(frame:GetName() .. "Note"):SetText("")
-  getglobal(frame:GetName() .. "Bid"):SetText("")
+  local bidBox = getglobal(frame:GetName() .. "Bid")
+  bidBox:SetText("")
+  if frame.mode == "DKP" then
+    bidBox:Show()
+  else
+    bidBox:Hide()
+  end
   ResetFrameStack()
   UIFrameFadeIn(frame, .5, 0, 1)
 end
@@ -309,8 +316,9 @@ function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, send
     local incomingMessage = VersionUtil:ParseMessage(stringMessage)
     if incomingMessage["items"] then
       local minimumBid = incomingMessage["minimumBid"] -- optional: defaults to 1
+      local mode = incomingMessage["mode"] -- defaults to "DKP"
       for _, i in GetItemLinks(string.gsub(incomingMessage["items"], "~~~", ",")) do
-        LoadBidFrame(i, sender, minimumBid)
+        LoadBidFrame(i, sender, minimumBid, mode)
       end
     elseif incomingMessage["endSession"] then
       ClearFrames(2, sender)
