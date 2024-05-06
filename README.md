@@ -23,3 +23,7 @@ Feature Development List:
 - [X] Auto-ignore items (configurable) by class usability (1.3.0)
 - [X] Set the minimum bid (1 by default) if set by the Master Looter (1.3.1)
 - [ ] YOUR IDEA HERE
+
+Chagelog:
+
+1.4.0 - Added support for MS/OS mdoe from ChatLootBidder
