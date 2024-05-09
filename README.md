@@ -15,15 +15,20 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
   /bid help  - Show this message again
 ```
 
-
-Feature Development List:
-- [X] Close/disable frames when a Loot Session ends (1.1.0)
-- [X] Set the frame sizes with the UI Scale and make it adjustable (1.2.0)
-- [X] Ignore items on a list (1.2.0)
-- [X] Auto-ignore items (configurable) by class usability (1.3.0)
-- [X] Set the minimum bid (1 by default) if set by the Master Looter (1.3.1)
-- [ ] YOUR IDEA HERE
-
 Chagelog:
 
-1.4.0 - Added support for MS/OS mdoe from ChatLootBidder
+1.4.0
+* Added support for MS/OS mode from ChatLootBidder
+
+1.3.1
+* Set the minimum bid (1 by default) if set by the Master Looter
+
+1.3.0
+* Auto-ignore items (configurable) by class usability `/bid autoignore`
+
+1.2.0
+* Set the frame sizes with the UI Scale and make it adjustable
+* Ignore items on a list
+
+1.1.0
+* Close/disable frames when a Loot Session ends
