@@ -31,6 +31,10 @@ for k, v in pairs(useable) do
   for _, v2 in pairs(v) do v2k[v2] = true end
   useable[k] = v2k
 end
+local noHealing = { ["Hunter"]=true, ["Warrior"]=true, ["Rogue"]=true, ["Mage"]=true, ["Warlock"]=true }
+local noDamageOrHealing = { ["Hunter"]=true, ["Warrior"]=true, ["Rogue"]=true }
+local noSpells = { ["Warrior"]=true, ["Rogue"]=true }
+local noMelee = { ["Mage"]=true, ["Warlock"]=true, ["Priest"]=true }
 
 local function IsTableEmpty(table)
   local next = next
@@ -42,6 +46,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.Version = addonVersion
   NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
   NotChatLootBidder_Store.AutoIgnore = NotChatLootBidder_Store.AutoIgnore == true
+  NotChatLootBidder_Store.Debug = NotChatLootBidder_Store.Debug == true
   NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
 end
 
@@ -51,6 +56,10 @@ end
 
 local function Message(message)
 	DEFAULT_CHAT_FRAME:AddMessage("|cffbe5eff".. chatPrefix .."|r "..message)
+end
+
+local function Debug(message)
+  if NotChatLootBidder_Store.Debug then Message(message) end
 end
 
 local function ShowHelp()
@@ -135,6 +144,21 @@ local function IsAlliance()
   return myRace == "Gnome" or myRace == "Dwarf" or myRace == "Human" or myRace == "Night Elf" or myRace == "High Elf"
 end
 
+local function FilterOutType(t)
+  if noDamageOrHealing[myClass] and string.find(t, "Increases damage and healing") then
+    return true
+  end
+  if noHealing[myClass] and string.find(t, "Increases healing") then
+    return true
+  end
+  if noSpells[myClass] and (string.find(t, "mana per 5") or string.find(t, "with spells")) then
+    return true
+  end
+  if noMelee[myClass] and (string.find(t, "Agility") or string.find(t, "Strength") or string.find(t, "get a critical strike by") or string.find(t, "Atack Power") or string.find(t, "chance to hit by")) then
+    return true
+  end
+end
+
 local function UseableItem(itemLinkInfo, itemSubType, itemName)
   -- Onyxia/Nefarian heads for Twow
   if itemName ~= nil and string.find(itemName, "(Alliance)") then
@@ -154,6 +178,11 @@ local function UseableItem(itemLinkInfo, itemSubType, itemName)
       if match then
         BidFrameInfoTooltip:Hide()
         return string.find(match, myClass)
+      end
+      if FilterOutType(text) then
+        Debug("Skipping " .. itemName .. ": " .. myClass .. " & '" .. text .. "'")
+        BidFrameInfoTooltip:Hide()
+        return false
       end
     end
     BidFrameInfoTooltip:Hide()
