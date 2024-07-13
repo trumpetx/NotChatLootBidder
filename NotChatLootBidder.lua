@@ -180,7 +180,6 @@ local function UseableItem(itemLinkInfo, itemSubType, itemName)
         return string.find(match, myClass)
       end
       if FilterOutType(text) then
-        Debug("Skipping " .. itemName .. ": " .. myClass .. " & '" .. text .. "'")
         BidFrameInfoTooltip:Hide()
         return false
       end
@@ -203,7 +202,7 @@ local function LoadBidFrame(item, masterLooter, minimumBid, mode)
     itemLinkInfo = itemKey
   end
   if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType, itemName) then
-    -- print("Ignoring " .. itemName)
+    Debug("Ignoring " .. itemName)
     return
   end
   local bidFrameId = NextFrameId()
