@@ -17,6 +17,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.5.0
+* Improving 'autoignore' to filter out obviously inappropriate items from specific classes.  Use `/bid autoignore` to toggle this feature on and off
+
 1.4.0
 * Added support for MS/OS mode from ChatLootBidder
 
