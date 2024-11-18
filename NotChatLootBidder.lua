@@ -48,6 +48,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.AutoIgnore = NotChatLootBidder_Store.AutoIgnore == true
   NotChatLootBidder_Store.Debug = NotChatLootBidder_Store.Debug == true
   NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
+  NotChatLootBidder_Store.Messages = NotChatLootBidder_Store.Messages or {}
 end
 
 local function Error(message)
@@ -67,6 +68,7 @@ local function ShowHelp()
   Message("/bid [item-link] [item-link2]  - Open test bid frames")
   Message("/bid scale [50-150]  - Set the UI scale percentage")
   Message("/bid autoignore  - Toggle 'auto-ignore' mode to ignore items your class cannot use")
+  Message("/bid message  - Set a default message (per character)")
   Message("/bid ignore  - List all ignored items")
   Message("/bid ignore clear  - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
@@ -217,7 +219,7 @@ local function LoadBidFrame(item, masterLooter, minimumBid, mode)
   getglobal(frame:GetName() .. "ItemIconItemName"):SetText(item)
   getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
-  getglobal(frame:GetName() .. "Note"):SetText("")
+  getglobal(frame:GetName() .. "Note"):SetText(NotChatLootBidder_Store.Messages[me] or "")
   local bidBox = getglobal(frame:GetName() .. "Bid")
   bidBox:SetText("")
   if frame.mode == "DKP" then
@@ -275,6 +277,16 @@ local function TogglePlacementFrame()
   end
 end
 
+local function SetMessage(message)
+  if message == "" then
+    Message("Default message has been unset")
+    NotChatLootBidder_Store.Messages[me] = nil
+  else
+    Message("Default message is set to: " .. message)
+    NotChatLootBidder_Store.Messages[me] = message
+  end
+end
+
 local function InitSlashCommands()
 	SLASH_NotChatLootBidder1 = "/bid"
 	SlashCmdList[addonName] = function(message)
@@ -294,6 +306,8 @@ local function InitSlashCommands()
     elseif commandlist[1] == "autoignore" then
       NotChatLootBidder_Store.AutoIgnore = not NotChatLootBidder_Store.AutoIgnore
       Message("Auto-ignore mode is " .. (NotChatLootBidder_Store.AutoIgnore and "enabled" or "disabled"))
+    elseif commandlist[1] == "message" then
+			SetMessage(string.sub(message, 8))
     elseif commandlist[1] == "ignore" then
       if commandlist[2] == "clear" then
         NotChatLootBidder_Store.IgnoredItems = {}
