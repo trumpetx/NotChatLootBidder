@@ -7,6 +7,7 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
   /bid [item-link] [item-link2]  - Open test bid frames
   /bid scale [50-150]  - Set the UI scale percentage
   /bid autoignore  - Toggle 'auto-ignore' mode to ignore items your class cannot use
+  /bid message  - Set a default message (per character)
   /bid ignore  - List all ignored items
   /bid ignore clear  - Clear the ignore list completely
   /bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)
@@ -16,6 +17,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 ```
 
 Chagelog:
+1.6.0
+* Adding a default message unique to your current character `/bid message alt; Prot` would pre-populate the "note" as `alt; Prot` for the character you're on right now
+* Updated to latest ChatThrottleLib for Turtle (14.1)
 
 1.5.0
 * Improving 'autoignore' to filter out obviously inappropriate items from specific classes.  Use `/bid autoignore` to toggle this feature on and off
