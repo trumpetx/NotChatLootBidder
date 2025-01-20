@@ -17,6 +17,10 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 ```
 
 Chagelog:
+
+1.7.0
+* Adding a checkbox to track whether a specific character is an "ALT".  This information will be eventually consumed by [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)
+
 1.6.0
 * Adding a default message unique to your current character `/bid message alt; Prot` would pre-populate the "note" as `alt; Prot` for the character you're on right now
 * Updated to latest ChatThrottleLib for Turtle (14.1)
