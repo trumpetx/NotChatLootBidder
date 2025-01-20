@@ -59,7 +59,7 @@
 							<Anchors>
 								<Anchor point="RIGHT" relativePoint="LEFT">
 									<Offset>
-										<AbsDimension x="-10" y="0" />
+										<AbsDimension x="-7" y="0" />
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -67,7 +67,7 @@
 					</Layer>
 				</Layers>
 				<Size>
-					<AbsDimension x="180" y="32" />
+					<AbsDimension x="175" y="32" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
@@ -77,6 +77,33 @@
 					</Anchor>
 				</Anchors>>
 			</EditBox>
+      <CheckButton name="$parentAlt" inherits="OptionsCheckButtonTemplate">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString inherits="GameFontNormalSmall" text="Alt:" justifyH="RIGHT">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="5" y="0" />
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="240" y="-80" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Scripts>
+          <OnClick>
+            NotChatLootBidder_Frame:SetAlt(this:GetChecked() == 1)
+          </OnClick>
+        </Scripts>
+      </CheckButton>
       <Button name="$parentItemIcon" inherits="UIPanelButtonTemplate" text="">
         <NormalTexture name="$parentNormalTexture" file="Interface\Icons\inv_staff_08">
           <Size>
@@ -325,6 +352,9 @@
         this.itemLinkInfo = "item:35::::::::60:::::"
         getglobal("NotChatLootBidder_FramePlacementNote"):SetText("'/bid' to show/hide this frame")
       </OnLoad>
+      <OnShow>
+        if NotChatLootBidder_FramePlacementAlt then getglobal("NotChatLootBidder_FramePlacementAlt"):SetChecked(NotChatLootBidder_Frame:GetAlt()) end
+      </OnShow>
       <OnHide>
         this:StopMovingOrSizing()
       </OnHide>

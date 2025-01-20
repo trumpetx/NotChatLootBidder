@@ -41,14 +41,17 @@ local function IsTableEmpty(table)
   return next(table) == nil
 end
 
-local function LoadVariables()
-  NotChatLootBidder_Store = NotChatLootBidder_Store or {}
-  NotChatLootBidder_Store.Version = addonVersion
-  NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
-  NotChatLootBidder_Store.AutoIgnore = NotChatLootBidder_Store.AutoIgnore == true
-  NotChatLootBidder_Store.Debug = NotChatLootBidder_Store.Debug == true
-  NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
-  NotChatLootBidder_Store.Messages = NotChatLootBidder_Store.Messages or {}
+local function Trim(str)
+  local _start, _end, _match = string.find(str or "", '^%s*(.-)%s*$')
+  return _match or ""
+end
+
+local function PrependSpaceIfContent(str)
+  if (not str) or string.len(str) == 0 then
+    return ""
+  else
+    return " " .. str
+  end
 end
 
 local function Error(message)
@@ -61,6 +64,26 @@ end
 
 local function Debug(message)
   if NotChatLootBidder_Store.Debug then Message(message) end
+end
+
+local function LoadVariables()
+  NotChatLootBidder_Store = NotChatLootBidder_Store or {}
+  NotChatLootBidder_Store.Version = addonVersion
+  NotChatLootBidder_Store.IgnoredItems = NotChatLootBidder_Store.IgnoredItems or {}
+  NotChatLootBidder_Store.AutoIgnore = NotChatLootBidder_Store.AutoIgnore == true
+  NotChatLootBidder_Store.Debug = NotChatLootBidder_Store.Debug == true
+  NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
+  NotChatLootBidder_Store.Messages = NotChatLootBidder_Store.Messages or {}
+  NotChatLootBidder_Store.Alt = NotChatLootBidder_Store.Alt or {}
+  NotChatLootBidder_Store.Messages[me] = Trim(NotChatLootBidder_Store.Messages[me])
+  for _,i in pairs({"alt;","alt-","alt"}) do
+    local len = string.len(i)
+    if string.lower(string.sub(NotChatLootBidder_Store.Messages[me], 1, len)) == i then
+      NotChatLootBidder:SetAlt(true)
+      NotChatLootBidder_Store.Messages[me] = Trim(string.sub(NotChatLootBidder_Store.Messages[me], len + 1))
+      return
+    end
+  end
 end
 
 local function ShowHelp()
@@ -127,13 +150,22 @@ local function CreateBidFrame(bidFrameId)
         amt = tonumber(amt)
         if amt == nil then return end
         if amt < frame.minimumBid then return end
+        amt = " " .. amt
       end
-      local note = string.gsub(getglobal(f:GetName() .. "Note"):GetText(), "^%s*(.-)%s*$", "%1")
-      if string.len(note) > 0 then note = " " .. note end
-      ChatThrottleLib:SendChatMessage("ALERT", addonName, f.itemLink .. " " .. tier .. " " .. amt .. " " .. note, "WHISPER", nil, f.masterLooter)
+      local note = Trim(getglobal(f:GetName() .. "Note"):GetText())
+      note = PrependSpaceIfContent(note)
+      if NotChatLootBidder_Store.Alt[me] then
+        if string.len(note) == 0 then
+          note = " ALT"
+        else
+          note = " ALT; " .. note
+        end
+      end
+      ChatThrottleLib:SendChatMessage("ALERT", addonName, f.itemLink .. " " .. tier .. amt .. note, "WHISPER", nil, f.masterLooter)
       frame:Hide()
     end)
   end
+  getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder:GetAlt())
   frame:SetScript("OnHide", function()
     needFrames[bidFrameId] = nil
     frame:ClearAllPoints()
@@ -308,6 +340,8 @@ local function InitSlashCommands()
       Message("Auto-ignore mode is " .. (NotChatLootBidder_Store.AutoIgnore and "enabled" or "disabled"))
     elseif commandlist[1] == "message" then
 			SetMessage(string.sub(message, 8))
+    elseif commandlist[1] == "alt" then
+      NotChatLootBidder:SetAlt(not NotChatLootBidder_Store.Alt[me])
     elseif commandlist[1] == "ignore" then
       if commandlist[2] == "clear" then
         NotChatLootBidder_Store.IgnoredItems = {}
@@ -334,6 +368,15 @@ local function InitSlashCommands()
       end
     end
   end
+end
+
+function NotChatLootBidder:GetAlt()
+  return NotChatLootBidder_Store.Alt[me] == true
+end
+
+function NotChatLootBidder:SetAlt(isAlt)
+  NotChatLootBidder_Store.Alt[me] = isAlt
+  Message("Setting \"alt\" flag " .. (isAlt and "on" or "off"))
 end
 
 function NotChatLootBidder.ADDON_LOADED(loadedAddonName)
