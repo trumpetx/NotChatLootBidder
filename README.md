@@ -22,7 +22,7 @@ Chagelog:
 * Adding a checkbox to track whether a specific character is an "ALT".  This information will be eventually consumed by [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)
 
 1.6.0
-* Adding a default message unique to your current character `/bid message alt; Prot` would pre-populate the "note" as `alt; Prot` for the character you're on right now
+* Adding a default message unique to your current character `/bid message Prot` would pre-populate the "note" as `Prot` for the character you're on right now
 * Updated to latest ChatThrottleLib for Turtle (14.1)
 
 1.5.0
