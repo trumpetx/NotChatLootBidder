@@ -1,6 +1,6 @@
 This addon allows the pop-up of loot frames which interact with the [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)  Master Looter addon.
 
-![image](https://github.com/trumpetx/NotChatLootBidder/assets/115343/425413b5-f34d-415a-b8e6-77a32354ec41)
+![image](https://github.com/user-attachments/assets/c1b1f63a-045a-42a9-a511-3d23ff80fdb8)
 
 ```
   /bid  - Open the placement frame
