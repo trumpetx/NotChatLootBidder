@@ -357,6 +357,8 @@
       </OnShow>
       <OnHide>
         this:StopMovingOrSizing()
+        local point, p, relativePoint, xOfs, yOfs = this:GetPoint()
+        NotChatLootBidder_Frame:SavePoint(point, relativePoint, xOfs, yOfs)
       </OnHide>
       <OnDragStart>
         if arg1 == "LeftButton" then
@@ -366,9 +368,8 @@
       </OnDragStart>
       <OnDragStop>
         this:StopMovingOrSizing()
-        this:GetParent():ClearAllPoints()
-        local point, _, relativePoint, xOfs, yOfs = this:GetPoint()
-        this:GetParent():SetPoint(point, "UIParent", relativePoint, xOfs, yOfs)
+        local point, p, relativePoint, xOfs, yOfs = this:GetPoint()
+        NotChatLootBidder_Frame:SavePoint(point, relativePoint, xOfs, yOfs)
       </OnDragStop>
       <OnMouseUp>
         if arg1 == "LeftButton" and this:IsVisible() then
@@ -381,7 +382,7 @@
   </Frames>
    <Scripts>
     <OnEvent>
-      this[event](arg1,arg2,arg3,arg4)
+      if this[event] then this[event](arg1,arg2,arg3,arg4) end
     </OnEvent>
     <OnLoad>
       this:RegisterEvent("ADDON_LOADED")

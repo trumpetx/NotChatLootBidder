@@ -1,4 +1,4 @@
-local NotChatLootBidder = NotChatLootBidder_Frame
+local turtle = (TargetHPText or TargetHPPercText) ~= nil
 local gfind = string.gmatch or string.gfind
 local addonName = "NotChatLootBidder"
 local addonTitle = GetAddOnMetadata(addonName, "Title")
@@ -31,6 +31,11 @@ for k, v in pairs(useable) do
   for _, v2 in pairs(v) do v2k[v2] = true end
   useable[k] = v2k
 end
+-- Rogues can use 1H Axes on Turtle WoW
+if turtle then
+  useable["Rogue"]["One-Handed Axes"] = true
+end
+
 local noHealing = { ["Hunter"]=true, ["Warrior"]=true, ["Rogue"]=true, ["Mage"]=true, ["Warlock"]=true }
 local noDamageOrHealing = { ["Hunter"]=true, ["Warrior"]=true, ["Rogue"]=true }
 local noSpells = { ["Warrior"]=true, ["Rogue"]=true }
@@ -79,7 +84,7 @@ local function LoadVariables()
   for _,i in pairs({"alt;","alt-","alt"}) do
     local len = string.len(i)
     if string.lower(string.sub(NotChatLootBidder_Store.Messages[me], 1, len)) == i then
-      NotChatLootBidder:SetAlt(true)
+      NotChatLootBidder_Frame:SetAlt(true)
       NotChatLootBidder_Store.Messages[me] = Trim(string.sub(NotChatLootBidder_Store.Messages[me], len + 1))
       return
     end
@@ -112,10 +117,15 @@ local function NextFrameId()
 end
 
 local function ResetFrameStack()
-  local frameHeight = 0
+  local point = NotChatLootBidder_Store.Point[1] or "TOP"
+  local relativePoint = NotChatLootBidder_Store.Point[2] or "TOP"
+  local xOfs = NotChatLootBidder_Store.Point[3] or 0
+  local yOfs = NotChatLootBidder_Store.Point[4] or -128
   for _, frame in pairs(needFrames) do
-    frame:SetPoint("TOP", NotChatLootBidder, "TOP", 0, frameHeight)
-    frameHeight = frameHeight - 128
+    Debug("Drawing frame: " .. point .. "," .. relativePoint .. "," .. xOfs .. "," .. yOfs)
+    frame:ClearAllPoints()
+    frame:SetPoint(point, "UIParent", relativePoint, xOfs, yOfs)
+    yOfs = yOfs - 128
     frame:SetScale(NotChatLootBidder_Store.UIScale * UIParent:GetScale())
   end
 end
@@ -138,8 +148,8 @@ end
 
 local function CreateBidFrame(bidFrameId)
   local bidFrameName = "BidFrame" .. bidFrameId
-  local frame = CreateFrame("Frame", bidFrameName, NotChatLootBidder, "BidFrameTemplate")
-  for _, t in {"MS", "OS", "ROLL"} do
+  local frame = CreateFrame("Frame", bidFrameName, NotChatLootBidder_Frame, "BidFrameTemplate")
+  for _, t in pairs({"MS", "OS", "ROLL"}) do
     local tier = t
     getglobal(bidFrameName .. tier .."Button"):SetScript("OnClick", function()
       local f = this:GetParent()
@@ -165,7 +175,7 @@ local function CreateBidFrame(bidFrameId)
       frame:Hide()
     end)
   end
-  getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder:GetAlt())
+  getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder_Frame:GetAlt())
   frame:SetScript("OnHide", function()
     needFrames[bidFrameId] = nil
     frame:ClearAllPoints()
@@ -202,7 +212,7 @@ local function UseableItem(itemLinkInfo, itemSubType, itemName)
   end
   if itemLinkInfo then -- some items like mounts may not have linkInfo provided by the client
     BidFrameInfoTooltip:ClearLines()
-    BidFrameInfoTooltip:SetOwner(NotChatLootBidder, "NONE", 0, 0)
+    BidFrameInfoTooltip:SetOwner(NotChatLootBidder_Frame, "NONE", 0, 0)
     BidFrameInfoTooltip:SetHyperlink(itemLinkInfo)
     BidFrameInfoTooltip:Show()
     for i=1, BidFrameInfoTooltip:NumLines() do
@@ -229,7 +239,18 @@ end
 
 local function LoadBidFrame(item, masterLooter, minimumBid, mode)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
-  local itemName, itemLinkInfo, itemRarity, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
+  -- Wrath API
+  local itemName, itemLinkInfo, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
+  if itemTexture == nil then
+    -- Vanilla API has no itemLevel; shift all values above itemRarity left
+    itemTexture = itemEquipLoc
+    itemEquipLoc = itemStackCount
+    itemStackCount = itemSubType
+    itemSubType = itemType
+    itemType = itemMinLevel
+    itemMinLevel = itemLevel
+    itemLevel = nil
+  end
   if itemLinkInfo == nil then
     -- This is a potentially unsafe operation and may cause disconnects according to API documentation
     -- No disconnects noticed in testing on twow's client
@@ -288,7 +309,7 @@ end
 
 local function ToggleIgnore(message)
   local ignoredItems = NotChatLootBidder_Store.IgnoredItems
-  for _, item in GetItemLinks(message) do
+  for _, item in pairs(GetItemLinks(message)) do
     if ignoredItems[item] then
       ignoredItems[item] = nil
       Message(item .. " is no longer ignored")
@@ -331,6 +352,9 @@ local function InitSlashCommands()
       TogglePlacementFrame()
     elseif commandlist[1] == "help" then
 			ShowHelp()
+    elseif commandlist[1] == "debug" then
+      NotChatLootBidder_Store.Debug = not NotChatLootBidder_Store.Debug
+      Message("Debug is " .. (NotChatLootBidder_Store.Debug and "enabled" or "disabled"))
     elseif commandlist[1] == "info" then
 			ShowInfo()
     elseif commandlist[1] == "clear" then
@@ -341,7 +365,7 @@ local function InitSlashCommands()
     elseif commandlist[1] == "message" then
 			SetMessage(string.sub(message, 8))
     elseif commandlist[1] == "alt" then
-      NotChatLootBidder:SetAlt(not NotChatLootBidder_Store.Alt[me])
+      NotChatLootBidder_Frame:SetAlt(not NotChatLootBidder_Store.Alt[me])
     elseif commandlist[1] == "ignore" then
       if commandlist[2] == "clear" then
         NotChatLootBidder_Store.IgnoredItems = {}
@@ -358,10 +382,10 @@ local function InitSlashCommands()
         Error("Invalid scale value.  Use a number between 50 and 150.")
       else
         NotChatLootBidder_Store.UIScale = scale
-        NotChatLootBidder.UI_SCALE_CHANGED()
+        NotChatLootBidder_Frame.UI_SCALE_CHANGED()
       end
     else
-      for _, i in GetItemLinks(message) do
+      for _, i in pairs(GetItemLinks(message)) do
         if NotChatLootBidder_Store.IgnoredItems[i] == nil then
           LoadBidFrame(i, me)
         end
@@ -370,16 +394,16 @@ local function InitSlashCommands()
   end
 end
 
-function NotChatLootBidder:GetAlt()
+function NotChatLootBidder_Frame:GetAlt()
   return NotChatLootBidder_Store.Alt[me] == true
 end
 
-function NotChatLootBidder:SetAlt(isAlt)
+function NotChatLootBidder_Frame:SetAlt(isAlt)
   NotChatLootBidder_Store.Alt[me] = isAlt
   Message("Setting \"alt\" flag " .. (isAlt and "on" or "off"))
 end
 
-function NotChatLootBidder.ADDON_LOADED(loadedAddonName)
+function NotChatLootBidder_Frame.ADDON_LOADED(loadedAddonName)
   if loadedAddonName == addonName then
     LoadVariables()
     InitSlashCommands()
@@ -388,21 +412,39 @@ function NotChatLootBidder.ADDON_LOADED(loadedAddonName)
   end
 end
 
-function NotChatLootBidder.PARTY_MEMBERS_CHANGED()
+function NotChatLootBidder_Frame.PARTY_MEMBERS_CHANGED()
   VersionUtil:PARTY_MEMBERS_CHANGED(addonName)
 end
 
-function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, sender)
-  if VersionUtil:CHAT_MSG_ADDON(addonName, function(ver)
-    Message("New version " .. ver .. " of " .. addonTitle .. " is available! Upgrade now at " .. addonNotes)
-  end) then return end
+--- Parse a string message into a Table.
+-- Commas and equal signs are not escaped
+-- @param message a comma separated key value pair list with equal signs separating the keys and values
+-- @return a Table with the parsed KVPs from the message
+local function ParseMessage(message)
+	local t={}
+	for kvp in gfind(message, "([^,]+)") do
+		local key = nil
+		for entry in gfind(kvp, "([^=]+)") do
+			if key == nil then
+				key = entry
+			else
+				t[key] = entry
+			end
+	  end
+	end
+	return t
+end
 
+function NotChatLootBidder_Frame.CHAT_MSG_ADDON(addonTag, stringMessage, channel, sender)
   if addonTag == addonName then
-    local incomingMessage = VersionUtil:ParseMessage(stringMessage)
+    if VersionUtil:CHAT_MSG_ADDON(addonName, function(ver)
+      Message("New version " .. ver .. " of " .. addonTitle .. " is available! Upgrade now at " .. addonNotes)
+    end) then return end
+    local incomingMessage = ParseMessage(stringMessage)
     if incomingMessage["items"] then
       local minimumBid = incomingMessage["minimumBid"] -- optional: defaults to 1
       local mode = incomingMessage["mode"] -- defaults to "DKP"
-      for _, i in GetItemLinks(string.gsub(incomingMessage["items"], "~~~", ",")) do
+      for _, i in pairs(GetItemLinks(string.gsub(incomingMessage["items"], "~~~", ","))) do
         LoadBidFrame(i, sender, minimumBid, mode)
       end
     elseif incomingMessage["endSession"] then
@@ -411,22 +453,26 @@ function NotChatLootBidder.CHAT_MSG_ADDON(addonTag, stringMessage, channel, send
   end
 end
 
-function NotChatLootBidder.PLAYER_ENTERING_WORLD()
+function NotChatLootBidder_Frame.PLAYER_ENTERING_WORLD()
   VersionUtil:PLAYER_ENTERING_WORLD(addonName)
-  if NotChatLootBidder_Store.Point and getn(NotChatLootBidder_Store.Point) == 4 then
-    NotChatLootBidder:SetPoint(NotChatLootBidder_Store.Point[1], "UIParent", NotChatLootBidder_Store.Point[2], NotChatLootBidder_Store.Point[3], NotChatLootBidder_Store.Point[4])
-  else
+  local point = NotChatLootBidder_Store.Point[1] or "TOP"
+  local relativePoint = NotChatLootBidder_Store.Point[2] or "TOP"
+  local xOfs = NotChatLootBidder_Store.Point[3] or 0
+  local yOfs = NotChatLootBidder_Store.Point[4] or -128
+  NotChatLootBidder_FramePlacement:ClearAllPoints()
+  NotChatLootBidder_FramePlacement:SetPoint(point, "UIParent", relativePoint, xOfs, yOfs)
+  if not NotChatLootBidder_Store.Point or not getn(NotChatLootBidder_Store.Point) == 4 then
     TogglePlacementFrame()
   end
   this:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
 
-function NotChatLootBidder.PLAYER_LEAVING_WORLD()
-  local point, _, relativePoint, xOfs, yOfs = NotChatLootBidder:GetPoint()
+function NotChatLootBidder_Frame:SavePoint(point, relativePoint, xOfs, yOfs)
+  Debug("Saving Bid Frame placement: " .. point .. "," .. relativePoint .. "," .. xOfs .. "," .. yOfs)
   NotChatLootBidder_Store.Point = {point, relativePoint, xOfs, yOfs}
 end
 
-function NotChatLootBidder.UI_SCALE_CHANGED()
+function NotChatLootBidder_Frame.UI_SCALE_CHANGED()
   TogglePlacementFrame()
   TogglePlacementFrame()
   ResetFrameStack()
