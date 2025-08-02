@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: |cff466d1dNot Chat Loot Bidder|r
-## Version: 1.7.0
+## Version: 1.7.1
 ## Notes: https://github.com/trumpetx/NotChatLootBidder
 ## Author: |c013220ffTrumpetX|r
 ## SavedVariables: NotChatLootBidder_Store

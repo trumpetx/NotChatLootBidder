@@ -18,6 +18,10 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.7.1
+* Display 1H Axes + Rogues when on Turtle when using `/bid autoignore`
+* Refactoring code to allow NotChatLootBidder to operate on 3.3.5a clients (.toc update notwithstanding)
+
 1.7.0
 * Adding a checkbox to track whether a specific character is an "ALT".  This information will be eventually consumed by [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)
 
