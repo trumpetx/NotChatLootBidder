@@ -80,6 +80,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.UIScale = NotChatLootBidder_Store.UIScale or 1
   NotChatLootBidder_Store.Messages = NotChatLootBidder_Store.Messages or {}
   NotChatLootBidder_Store.Alt = NotChatLootBidder_Store.Alt or {}
+  NotChatLootBidder_Store.NoReply = NotChatLootBidder_Store.NoReply or {}
   NotChatLootBidder_Store.Messages[me] = Trim(NotChatLootBidder_Store.Messages[me])
   for _,i in pairs({"alt;","alt-","alt"}) do
     local len = string.len(i)
@@ -97,6 +98,8 @@ local function ShowHelp()
   Message("/bid scale [50-150]  - Set the UI scale percentage")
   Message("/bid autoignore  - Toggle 'auto-ignore' mode to ignore items your class cannot use")
   Message("/bid message  - Set a default message (per character)")
+  Message("/bid alt  - Toggle 'alt' flag for bids")
+  Message("/bid noreply  - Toggle 'no reply' flag for bids")
   Message("/bid ignore  - List all ignored items")
   Message("/bid ignore clear  - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
@@ -164,6 +167,13 @@ local function CreateBidFrame(bidFrameId)
       end
       local note = Trim(getglobal(f:GetName() .. "Note"):GetText())
       note = PrependSpaceIfContent(note)
+      if NotChatLootBidder_Store.NoReply[me] then
+        if string.len(note) == 0 then
+          note = " NR"
+        else
+          note = " NR; " .. note
+        end
+      end
       if NotChatLootBidder_Store.Alt[me] then
         if string.len(note) == 0 then
           note = " ALT"
@@ -176,6 +186,7 @@ local function CreateBidFrame(bidFrameId)
     end)
   end
   getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder_Frame:GetAlt())
+  getglobal(bidFrameName .. "NoReply"):SetChecked(NotChatLootBidder_Frame:GetNoReply())
   frame:SetScript("OnHide", function()
     needFrames[bidFrameId] = nil
     frame:ClearAllPoints()
@@ -366,6 +377,8 @@ local function InitSlashCommands()
 			SetMessage(string.sub(message, 8))
     elseif commandlist[1] == "alt" then
       NotChatLootBidder_Frame:SetAlt(not NotChatLootBidder_Store.Alt[me])
+    elseif commandlist[1] == "noreply" then
+      NotChatLootBidder_Frame:SetNoReply(not NotChatLootBidder_Store.NoReply[me])
     elseif commandlist[1] == "ignore" then
       if commandlist[2] == "clear" then
         NotChatLootBidder_Store.IgnoredItems = {}
@@ -401,6 +414,15 @@ end
 function NotChatLootBidder_Frame:SetAlt(isAlt)
   NotChatLootBidder_Store.Alt[me] = isAlt
   Message("Setting \"alt\" flag " .. (isAlt and "on" or "off"))
+end
+
+function NotChatLootBidder_Frame:GetNoReply()
+  return NotChatLootBidder_Store.NoReply[me] == true
+end
+
+function NotChatLootBidder_Frame:SetNoReply(isNoReply)
+  NotChatLootBidder_Store.NoReply[me] = isNoReply
+  Message("Setting \"no reply\" flag " .. (isNoReply and "on" or "off"))
 end
 
 function NotChatLootBidder_Frame.ADDON_LOADED(loadedAddonName)

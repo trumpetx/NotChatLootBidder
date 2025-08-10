@@ -5,7 +5,7 @@
   <GameTooltip name="BidFrameInfoTooltip" inherits="GameTooltipTemplate" parent="UIParent" hidden="true"/>
   <Frame name="BidFrameTemplate" virtual="true" enableMouse="true" hidden="true">
     <Size>
-      <AbsDimension x="412" y="128"/>
+      <AbsDimension x="412" y="138"/>
     </Size>
     <Anchors>
       <Anchor point="TOP">
@@ -47,7 +47,7 @@
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
 						<Offset>
-							<AbsDimension x="225" y="-45"/>
+							<AbsDimension x="215" y="-60"/>
 						</Offset>
 					</Anchor>
 				</Anchors>>
@@ -72,12 +72,12 @@
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
 						<Offset>
-							<AbsDimension x="50" y="-80"/>
+							<AbsDimension x="50" y="-95"/>
 						</Offset>
 					</Anchor>
 				</Anchors>>
 			</EditBox>
-      <CheckButton name="$parentAlt" inherits="OptionsCheckButtonTemplate">
+      <CheckButton name="$parentAlt" inherits="UICheckButtonTemplate">
 				<Layers>
 					<Layer level="BACKGROUND">
 						<FontString inherits="GameFontNormalSmall" text="Alt:" justifyH="RIGHT">
@@ -94,13 +94,40 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="240" y="-80" />
+              <AbsDimension x="240" y="-95" />
             </Offset>
           </Anchor>
         </Anchors>
         <Scripts>
           <OnClick>
             NotChatLootBidder_Frame:SetAlt(this:GetChecked() == 1)
+          </OnClick>
+        </Scripts>
+      </CheckButton>
+      <CheckButton name="$parentNoReply" inherits="UICheckButtonTemplate">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString inherits="GameFontNormalSmall" text="No Reply:" justifyH="RIGHT">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="5" y="0" />
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="310" y="-95" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Scripts>
+          <OnClick>
+            NotChatLootBidder_Frame:SetNoReply(this:GetChecked() == 1)
           </OnClick>
         </Scripts>
       </CheckButton>
@@ -212,7 +239,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="268" y="-40"/>
+              <AbsDimension x="260" y="-35"/>
             </Offset>
           </Anchor>
         </Anchors>
@@ -262,7 +289,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="305" y="-40"/>
+              <AbsDimension x="297" y="-35"/>
             </Offset>
           </Anchor>
         </Anchors>
@@ -312,7 +339,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="342" y="-40"/>
+              <AbsDimension x="334" y="-35"/>
             </Offset>
           </Anchor>
         </Anchors>
@@ -354,6 +381,7 @@
       </OnLoad>
       <OnShow>
         if NotChatLootBidder_FramePlacementAlt then getglobal("NotChatLootBidder_FramePlacementAlt"):SetChecked(NotChatLootBidder_Frame:GetAlt()) end
+        if NotChatLootBidder_FramePlacementNoReply then getglobal("NotChatLootBidder_FramePlacementNoReply"):SetChecked(NotChatLootBidder_Frame:GetNoReply()) end
       </OnShow>
       <OnHide>
         this:StopMovingOrSizing()
