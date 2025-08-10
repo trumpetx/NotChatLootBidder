@@ -18,6 +18,10 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.7.2
+* Adding a checkbox (similar to the ALT checkbox) for "No-Reply" which will eventually be consumed by [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)
+* Making the bid box a few pixels bigger to accommodate the new checkbox
+
 1.7.1
 * Display 1H Axes + Rogues when on Turtle when using `/bid autoignore`
 * Refactoring code to allow NotChatLootBidder to operate on 3.3.5a clients (.toc update notwithstanding)
