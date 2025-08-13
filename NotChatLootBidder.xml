@@ -52,7 +52,7 @@
 					</Anchor>
 				</Anchors>>
 			</EditBox>
-			<EditBox name="$parentNote" inherits="InputBoxTemplate" letters="120" autofocus="false" text="'/bid' to show/hide this frame">
+			<EditBox name="$parentNote" inherits="InputBoxTemplate" letters="120" autofocus="false" text="'/bid' to toggle this frame">
 				<Layers>
 					<Layer level="BACKGROUND">
 						<FontString inherits="GameFontNormalSmall" text="Note:" justifyH="RIGHT">
@@ -67,7 +67,7 @@
 					</Layer>
 				</Layers>
 				<Size>
-					<AbsDimension x="175" y="32" />
+					<AbsDimension x="137" y="32" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
@@ -77,6 +77,56 @@
 					</Anchor>
 				</Anchors>>
 			</EditBox>
+      <Frame name="$parentSpec" inherits="UIDropDownMenuTemplate">
+        <Layers>
+          <Layer level="OVERLAY">
+            <FontString inherits="GameFontNormalSmall" text="Spec:" justifyH="RIGHT">
+              <Anchors>
+                <Anchor point="RIGHT" relativePoint="LEFT">
+                  <Offset>
+                    <AbsDimension x="15" y="0" />
+                  </Offset>
+                </Anchor>
+              </Anchors>
+            </FontString>
+          </Layer>
+        </Layers>
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset>
+              <AbsDimension x="200" y="-95" />
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Scripts>
+          <OnLoad>
+            UIDropDownMenu_Initialize(this, function(level, menulist)
+              if level == nil then
+                -- Initialize the "outer Frame" to include a :SetValue() method which we can use externally
+                local widgetName = this:GetName()
+                local propName = string.sub(widgetName, strlen(this:GetParent():GetName())+1)
+                this.SetValue = function(self, value)
+                  UIDropDownMenu_SetSelectedValue(self, value)
+                  getglobal(widgetName .. "Text"):SetText(value)
+                  CloseDropDownMenus()
+                end
+              elseif level == 1 then
+                local widget = this:GetParent()
+                for _, s in pairs({"None", "Tank", "Heal", "DPS"}) do
+                  local option = {}
+                  option.text = s
+                  option.func = function()
+                    NotChatLootBidder_Frame:SetSpec(option.text)
+                    widget:SetValue(option.text)
+                  end
+                  UIDropDownMenu_AddButton(option)
+                end
+              end
+            end)
+            UIDropDownMenu_SetWidth(50)
+          </OnLoad>
+        </Scripts>
+      </Frame>
       <CheckButton name="$parentAlt" inherits="UICheckButtonTemplate">
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -94,7 +144,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="240" y="-95" />
+              <AbsDimension x="300" y="-95" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -121,7 +171,7 @@
         <Anchors>
           <Anchor point="TOPLEFT">
             <Offset>
-              <AbsDimension x="310" y="-95" />
+              <AbsDimension x="370" y="-95" />
             </Offset>
           </Anchor>
         </Anchors>
@@ -380,8 +430,9 @@
         getglobal("NotChatLootBidder_FramePlacementNote"):SetText("'/bid' to show/hide this frame")
       </OnLoad>
       <OnShow>
-        if NotChatLootBidder_FramePlacementAlt then getglobal("NotChatLootBidder_FramePlacementAlt"):SetChecked(NotChatLootBidder_Frame:GetAlt()) end
-        if NotChatLootBidder_FramePlacementNoReply then getglobal("NotChatLootBidder_FramePlacementNoReply"):SetChecked(NotChatLootBidder_Frame:GetNoReply()) end
+        NotChatLootBidder_FramePlacementAlt:SetChecked(NotChatLootBidder_Frame:GetAlt())
+        NotChatLootBidder_FramePlacementNoReply:SetChecked(NotChatLootBidder_Frame:GetNoReply())
+        NotChatLootBidder_FramePlacementSpec:SetValue(NotChatLootBidder_Frame:GetSpec())
       </OnShow>
       <OnHide>
         this:StopMovingOrSizing()

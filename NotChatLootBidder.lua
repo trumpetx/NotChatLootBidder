@@ -51,14 +51,6 @@ local function Trim(str)
   return _match or ""
 end
 
-local function PrependSpaceIfContent(str)
-  if (not str) or string.len(str) == 0 then
-    return ""
-  else
-    return " " .. str
-  end
-end
-
 local function Error(message)
 	DEFAULT_CHAT_FRAME:AddMessage("|cffbe5eff" .. chatPrefix .. "|cffff0000 "..message)
 end
@@ -81,6 +73,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.Messages = NotChatLootBidder_Store.Messages or {}
   NotChatLootBidder_Store.Alt = NotChatLootBidder_Store.Alt or {}
   NotChatLootBidder_Store.NoReply = NotChatLootBidder_Store.NoReply or {}
+  NotChatLootBidder_Store.Spec = NotChatLootBidder_Store.Spec or {}
   NotChatLootBidder_Store.Messages[me] = Trim(NotChatLootBidder_Store.Messages[me])
   for _,i in pairs({"alt;","alt-","alt"}) do
     local len = string.len(i)
@@ -156,37 +149,40 @@ local function CreateBidFrame(bidFrameId)
     local tier = t
     getglobal(bidFrameName .. tier .."Button"):SetScript("OnClick", function()
       local f = this:GetParent()
-      local amt = getglobal(f:GetName() .. "Bid"):GetText()
-      if tier == "ROLL" or frame.mode ~= "DKP" then
-        amt = ""
-      else
+      local message = {f.itemLink, tier}
+      local requiresBid = frame.mode == "DKP" and tier ~= "ROLL"
+      if requiresBid then
+        local amt = getglobal(f:GetName() .. "Bid"):GetText()
         amt = tonumber(amt)
         if amt == nil then return end
         if amt < frame.minimumBid then return end
-        amt = " " .. amt
-      end
-      local note = Trim(getglobal(f:GetName() .. "Note"):GetText())
-      note = PrependSpaceIfContent(note)
-      if NotChatLootBidder_Store.NoReply[me] then
-        if string.len(note) == 0 then
-          note = " NR"
-        else
-          note = " NR; " .. note
-        end
+        table.insert(message, amt)
       end
       if NotChatLootBidder_Store.Alt[me] then
-        if string.len(note) == 0 then
-          note = " ALT"
-        else
-          note = " ALT; " .. note
-        end
+        table.insert(message, "ALT")
       end
-      ChatThrottleLib:SendChatMessage("ALERT", addonName, f.itemLink .. " " .. tier .. amt .. note, "WHISPER", nil, f.masterLooter)
+      if NotChatLootBidder_Store.NoReply[me] then
+        table.insert(message, "NR")
+      end
+      local spec = NotChatLootBidder_Store.Spec[me]
+      if spec and spec ~= "None" then
+        table.insert(message, spec)
+      end
+      local note = Trim(getglobal(f:GetName() .. "Note"):GetText())
+      local hasNote = string.len(note) > 0
+      if hasNote and (getn(message) > 2 or (not requiresBid and getn(message) > 1)) then
+        message[getn(message)] = message[getn(message)] .. "; "
+      end
+      if hasNote then
+        table.insert(message, note)
+      end
+      ChatThrottleLib:SendChatMessage("ALERT", addonName, table.concat(message, " "), "WHISPER", nil, f.masterLooter)
       frame:Hide()
     end)
   end
   getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder_Frame:GetAlt())
   getglobal(bidFrameName .. "NoReply"):SetChecked(NotChatLootBidder_Frame:GetNoReply())
+  getglobal(bidFrameName .. "Spec"):SetValue(NotChatLootBidder_Frame:GetSpec())
   frame:SetScript("OnHide", function()
     needFrames[bidFrameId] = nil
     frame:ClearAllPoints()
@@ -423,6 +419,15 @@ end
 function NotChatLootBidder_Frame:SetNoReply(isNoReply)
   NotChatLootBidder_Store.NoReply[me] = isNoReply
   Message("Setting \"no reply\" flag " .. (isNoReply and "on" or "off"))
+end
+
+function NotChatLootBidder_Frame:GetSpec()
+  return NotChatLootBidder_Store.Spec[me] or "None"
+end
+
+function NotChatLootBidder_Frame:SetSpec(spec)
+  NotChatLootBidder_Store.Spec[me] = spec
+  Message("Setting spec to: " .. spec)
 end
 
 function NotChatLootBidder_Frame.ADDON_LOADED(loadedAddonName)
