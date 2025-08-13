@@ -18,6 +18,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.8.0
+* Adding a "Spec" dropdown in the bid menu which will prepend the spec with the other "params" (like ALT and NR)
+
 1.7.2
 * Adding a checkbox (similar to the ALT checkbox) for "No-Reply" which will eventually be consumed by [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)
 * Making the bid box a few pixels bigger to accommodate the new checkbox
