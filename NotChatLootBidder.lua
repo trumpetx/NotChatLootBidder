@@ -482,13 +482,14 @@ end
 
 function NotChatLootBidder_Frame.PLAYER_ENTERING_WORLD()
   VersionUtil:PLAYER_ENTERING_WORLD(addonName)
-  local point = NotChatLootBidder_Store.Point[1] or "TOP"
-  local relativePoint = NotChatLootBidder_Store.Point[2] or "TOP"
-  local xOfs = NotChatLootBidder_Store.Point[3] or 0
-  local yOfs = NotChatLootBidder_Store.Point[4] or -128
+  local pointArray = NotChatLootBidder_Store.Point or {}
+  local point = pointArray[1] or "TOP"
+  local relativePoint = pointArray[2] or "TOP"
+  local xOfs = pointArray[3] or 0
+  local yOfs = pointArray[4] or -128
   NotChatLootBidder_FramePlacement:ClearAllPoints()
   NotChatLootBidder_FramePlacement:SetPoint(point, "UIParent", relativePoint, xOfs, yOfs)
-  if not NotChatLootBidder_Store.Point or not getn(NotChatLootBidder_Store.Point) == 4 then
+  if not pointArray or not getn(pointArray) == 4 then
     TogglePlacementFrame()
   end
   this:UnregisterEvent("PLAYER_ENTERING_WORLD")
