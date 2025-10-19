@@ -75,6 +75,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.NoReply = NotChatLootBidder_Store.NoReply or {}
   NotChatLootBidder_Store.Spec = NotChatLootBidder_Store.Spec or {}
   NotChatLootBidder_Store.Messages[me] = Trim(NotChatLootBidder_Store.Messages[me])
+  NotChatLootBidder_Store.Point = NotChatLootBidder_Store.Point or {}
   for _,i in pairs({"alt;","alt-","alt"}) do
     local len = string.len(i)
     if string.lower(string.sub(NotChatLootBidder_Store.Messages[me], 1, len)) == i then
@@ -113,10 +114,11 @@ local function NextFrameId()
 end
 
 local function ResetFrameStack()
-  local point = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[1] or "TOP"
-  local relativePoint = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[2] or "TOP"
-  local xOfs = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[3] or 0
-  local yOfs = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[4] or -128
+  local pointArray = NotChatLootBidder_Store.Point or {}
+  local point = pointArray[1] or "TOP"
+  local relativePoint = pointArray[2] or "TOP"
+  local xOfs = pointArray[3] or 0
+  local yOfs = pointArray[4] or -128
   for _, frame in pairs(needFrames) do
     Debug("Drawing frame: " .. point .. "," .. relativePoint .. "," .. xOfs .. "," .. yOfs)
     frame:ClearAllPoints()
