@@ -113,10 +113,10 @@ local function NextFrameId()
 end
 
 local function ResetFrameStack()
-  local point = NotChatLootBidder_Store.Point[1] or "TOP"
-  local relativePoint = NotChatLootBidder_Store.Point[2] or "TOP"
-  local xOfs = NotChatLootBidder_Store.Point[3] or 0
-  local yOfs = NotChatLootBidder_Store.Point[4] or -128
+  local point = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[1] or "TOP"
+  local relativePoint = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[2] or "TOP"
+  local xOfs = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[3] or 0
+  local yOfs = NotChatLootBidder_Store.Point and NotChatLootBidder_Store.Point[4] or -128
   for _, frame in pairs(needFrames) do
     Debug("Drawing frame: " .. point .. "," .. relativePoint .. "," .. xOfs .. "," .. yOfs)
     frame:ClearAllPoints()
