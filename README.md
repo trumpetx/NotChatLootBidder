@@ -18,7 +18,7 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
-1.8.1
+1.8.1-2
 * Fixing the error `NotChatLootBidder.lua: attempt to index field ``Point' (a nil value)`
 
 1.8.0
