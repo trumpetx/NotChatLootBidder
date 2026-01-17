@@ -1,4 +1,4 @@
-This addon allows the pop-up of loot frames which interact with the [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder)  Master Looter addon.
+This addon allows the pop-up of loot frames which interact with the [ChatLootBidder](https://github.com/trumpetx/ChatLootBidder) Master Looter addon, and also supports [RollFor](https://github.com/obszczymucha/roll-for-vanilla)(Vanilla) and [RollFor](https://github.com/sica42/RollFor)(Turtle) for automated rolling.
 
 ![image](https://github.com/user-attachments/assets/c1b1f63a-045a-42a9-a511-3d23ff80fdb8)
 
@@ -12,11 +12,17 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
   /bid ignore clear  - Clear the ignore list completely
   /bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)
   /bid clear  - Clear all bid frames
+  /bid rollfor  - Enable or disable RollFor support
   /bid info  - Show information about the add-on
   /bid help  - Show this message again
 ```
 
 Chagelog:
+
+1.9.0
+* Added RollFor support - automatically shows popup frames when master looter announces rolls via RollFor
+* RollFor frames support MS/OS/T-mog buttons that automatically roll with the correct thresholds
+* Use `/bid rollfor` to enable or disable RollFor support (enabled by default)
 
 1.8.1-2
 * Fixing the error `NotChatLootBidder.lua: attempt to index field ``Point' (a nil value)`
