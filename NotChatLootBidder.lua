@@ -76,6 +76,7 @@ local function LoadVariables()
   NotChatLootBidder_Store.Spec = NotChatLootBidder_Store.Spec or {}
   NotChatLootBidder_Store.Messages[me] = Trim(NotChatLootBidder_Store.Messages[me])
   NotChatLootBidder_Store.Point = NotChatLootBidder_Store.Point or {}
+  NotChatLootBidder_Store.RollForEnabled = NotChatLootBidder_Store.RollForEnabled ~= false
   for _,i in pairs({"alt;","alt-","alt"}) do
     local len = string.len(i)
     if string.lower(string.sub(NotChatLootBidder_Store.Messages[me], 1, len)) == i then
@@ -98,6 +99,7 @@ local function ShowHelp()
   Message("/bid ignore clear  - Clear the ignore list completely")
   Message("/bid ignore [item-link] [item-link2]  - Toggle 'Ignore' for loot windows of these item(s)")
   Message("/bid clear  - Clear all bid frames")
+  Message("/bid rollfor  - Enable or disable RollFor support")
 	Message("/bid info  - Show information about the add-on")
 end
 
@@ -185,6 +187,45 @@ local function CreateBidFrame(bidFrameId)
   getglobal(bidFrameName .. "Alt"):SetChecked(NotChatLootBidder_Frame:GetAlt())
   getglobal(bidFrameName .. "NoReply"):SetChecked(NotChatLootBidder_Frame:GetNoReply())
   getglobal(bidFrameName .. "Spec"):SetValue(NotChatLootBidder_Frame:GetSpec())
+  frame:SetScript("OnHide", function()
+    needFrames[bidFrameId] = nil
+    frame:ClearAllPoints()
+    ResetFrameStack()
+  end)
+  return frame
+end
+
+local function CreateRollForFrame(bidFrameId)
+  local bidFrameName = "RollForFrame" .. bidFrameId
+  local frame = CreateFrame("Frame", bidFrameName, NotChatLootBidder_Frame, "RollForFrameTemplate")
+  
+  getglobal(bidFrameName .. "MSButton"):SetScript("OnClick", function()
+    local f = this:GetParent()
+    if f.msThreshold then
+      RandomRoll(1, f.msThreshold)
+      Debug("Rolling MS: /roll 1-" .. f.msThreshold)
+    end
+    frame:Hide()
+  end)
+  
+  getglobal(bidFrameName .. "OSButton"):SetScript("OnClick", function()
+    local f = this:GetParent()
+    if f.osThreshold then
+      RandomRoll(1, f.osThreshold)
+      Debug("Rolling OS: /roll 1-" .. f.osThreshold)
+    end
+    frame:Hide()
+  end)
+  
+  getglobal(bidFrameName .. "TmogButton"):SetScript("OnClick", function()
+    local f = this:GetParent()
+    if f.tmogThreshold then
+      RandomRoll(1, f.tmogThreshold)
+      Debug("Rolling TMOG: /roll 1-" .. f.tmogThreshold)
+    end
+    frame:Hide()
+  end)
+  
   frame:SetScript("OnHide", function()
     needFrames[bidFrameId] = nil
     frame:ClearAllPoints()
@@ -293,6 +334,57 @@ local function LoadBidFrame(item, masterLooter, minimumBid, mode)
   UIFrameFadeIn(frame, .5, 0, 1)
 end
 
+local function LoadRollForFrame(item, masterLooter, msThreshold, osThreshold, tmogThreshold)
+  local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
+  -- Wrath API
+  local itemName, itemLinkInfo, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
+  if itemTexture == nil then
+    -- Vanilla API has no itemLevel; shift all values above itemRarity left
+    itemTexture = itemEquipLoc
+    itemEquipLoc = itemStackCount
+    itemStackCount = itemSubType
+    itemSubType = itemType
+    itemType = itemMinLevel
+    itemMinLevel = itemLevel
+    itemLevel = nil
+  end
+  if itemLinkInfo == nil then
+    itemLinkInfo = itemKey
+  end
+  if NotChatLootBidder_Store.AutoIgnore and not UseableItem(itemLinkInfo, itemSubType, itemName) then
+    Debug("Ignoring " .. itemName)
+    return
+  end
+  -- Clear existing RollFor frames when a new roll starts
+  ClearFrames(.2)
+  local bidFrameId = NextFrameId()
+  local frame = getglobal("RollForFrame" .. bidFrameId)
+  if not frame then
+    frame = CreateRollForFrame(bidFrameId)
+  end
+  frame.itemLink = item
+  frame.itemLinkInfo = itemLinkInfo
+  frame.masterLooter = masterLooter
+  frame.msThreshold = msThreshold
+  frame.osThreshold = osThreshold
+  frame.tmogThreshold = tmogThreshold
+  needFrames[bidFrameId] = frame
+  getglobal(frame:GetName() .. "ItemIconItemName"):SetText(item)
+  getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
+  getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
+  
+  -- Hide T-mog button if no tmog threshold
+  local tmogButton = getglobal(frame:GetName() .. "TmogButton")
+  if tmogThreshold and tmogThreshold > 0 then
+    tmogButton:Show()
+  else
+    tmogButton:Hide()
+  end
+  
+  ResetFrameStack()
+  UIFrameFadeIn(frame, .5, 0, 1)
+end
+
 local function GetItemLinks(str, start)
   local itemLinks = {}
   local _start, _end = nil, -1
@@ -302,6 +394,83 @@ local function GetItemLinks(str, start)
       return itemLinks
     end
     table.insert(itemLinks, string.sub(str, _start, _end))
+  end
+end
+
+local function GetRaidIndex(unitName)
+  if UnitInRaid("player") == 1 then
+     for i = 1, GetNumRaidMembers() do
+        if UnitName("raid"..i) == unitName then
+           return i
+        end
+     end
+  end
+  return 0
+end
+
+local function IsRaidAssistant(unitName)
+  _, rank = GetRaidRosterInfo(GetRaidIndex(unitName));
+  return rank ~= 0
+end
+
+local function IsMasterLooter(playerName)
+  local method, _ = GetLootMethod()
+  if method ~= "master" then return false end
+  return IsRaidAssistant(playerName)
+end
+
+-- Parse messages like: "Roll for [item link]: /roll 100(MS) or /roll 99 (OS)" or "Roll for [item link]: /roll 100(MS) or /roll 99 (OS) or /roll 98 (TMOG)"
+-- Returns: itemLink, msThreshold, osThreshold, tmogThreshold (or nil if not found)
+local function ParseRollForMessage(message)
+  if not string.find(message, "Roll for ") then
+    return nil
+  end
+  local itemLink = nil
+  local itemStart, itemEnd = string.find(message, itemRegex)
+  if itemStart then
+    itemLink = string.sub(message, itemStart, itemEnd)
+  else
+    return nil
+  end
+  
+  local msThreshold = 100
+  local _, _, msMatch = string.find(message, "/roll%s+(%d+)%s*%(%s*MS%s*%)")
+  if msMatch then
+    msThreshold = tonumber(msMatch)
+  end
+  
+  local osThreshold = 99
+  local _, _, osMatch = string.find(message, "/roll%s+(%d+)%s*%(%s*OS%s*%)")
+  if osMatch then
+    osThreshold = tonumber(osMatch)
+  end
+  
+  local tmogThreshold = nil
+  local _, _, tmogMatch = string.find(message, "/roll%s+(%d+)%s*%(%s*TMOG%s*%)")
+  if tmogMatch then
+    tmogThreshold = tonumber(tmogMatch)
+  end
+  
+  return itemLink, msThreshold, osThreshold, tmogThreshold
+end
+
+local function HandleRollForMessage(message, sender)
+  if not IsMasterLooter(sender) then
+    return
+  end
+  
+  -- Detect RollFor winner announcement
+  if string.find(message, "rolled the .-highest.*for") or string.find(message, "No one rolled for") then
+    Debug("Detected winner announcement, clearing RollFor frames")
+    ClearFrames(.2)
+    return
+  end
+
+  -- Detect new RollFor
+  local itemLink, msThreshold, osThreshold, tmogThreshold = ParseRollForMessage(message)
+  if itemLink then
+    Debug("Detected RollFor message for " .. itemLink .. " from " .. sender)
+    LoadRollForFrame(itemLink, sender, msThreshold, osThreshold, tmogThreshold)
   end
 end
 
@@ -395,6 +564,9 @@ local function InitSlashCommands()
         NotChatLootBidder_Store.UIScale = scale
         NotChatLootBidder_Frame.UI_SCALE_CHANGED()
       end
+    elseif commandlist[1] == "rollfor" then
+      NotChatLootBidder_Store.RollForEnabled = not NotChatLootBidder_Store.RollForEnabled
+      Message("RollFor mode is " .. (NotChatLootBidder_Store.RollForEnabled and "enabled" or "disabled"))
     else
       for _, i in pairs(GetItemLinks(message)) do
         if NotChatLootBidder_Store.IgnoredItems[i] == nil then
@@ -480,6 +652,20 @@ function NotChatLootBidder_Frame.CHAT_MSG_ADDON(addonTag, stringMessage, channel
       ClearFrames(2, sender)
     end
   end
+end
+
+function NotChatLootBidder_Frame.CHAT_MSG_RAID(message, sender)
+  if NotChatLootBidder_Store.RollForEnabled then
+    HandleRollForMessage(message, sender)
+  end
+end
+
+function NotChatLootBidder_Frame.CHAT_MSG_RAID_LEADER(message, sender)
+  NotChatLootBidder_Frame.CHAT_MSG_RAID(message, sender)
+end
+
+function NotChatLootBidder_Frame.CHAT_MSG_RAID_WARNING(message, sender)
+  NotChatLootBidder_Frame.CHAT_MSG_RAID(message, sender)
 end
 
 function NotChatLootBidder_Frame.PLAYER_ENTERING_WORLD()
