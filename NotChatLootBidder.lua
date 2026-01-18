@@ -505,6 +505,13 @@ local function HandleRollForMessage(message, sender)
     return
   end
 
+  -- Handle cancel announcement
+  if string.find(message, "Rolling for .* was canceled%.") then
+    Debug("Detected roll cancellation, clearing RollFor frames")
+    ClearFrames(.2)
+    return
+  end
+
   local itemLink, msThreshold, osThreshold, tmogThreshold = ParseRollForMessage(message)
   if itemLink then
     local srMatched, hasCustomLogic = CheckSRRoll(message)

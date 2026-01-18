@@ -18,6 +18,10 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 ```
 
 Chagelog:
+
+1.9.2
+* Canceling the pop-up window win bidding on an item has been canceled
+
 1.9.1
 * Suppressing pop-ups when RollFor SR announcement does not include the player; only showing MS option in this situation
 * Displaying a message when there is custom rolling logic (manual rolling required)
