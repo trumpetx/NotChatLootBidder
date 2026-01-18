@@ -373,7 +373,13 @@ local function LoadRollForFrame(item, masterLooter, msThreshold, osThreshold, tm
   getglobal(frame:GetName() .. "ItemIcon"):SetNormalTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   getglobal(frame:GetName() .. "ItemIcon"):SetPushedTexture(itemTexture or "Interface\\Icons\\Inv_misc_questionmark")
   
-  -- Hide T-mog button if no tmog threshold
+  -- Hide buttons if no threshold
+  local osButton = getglobal(frame:GetName() .. "OSButton")
+  if osThreshold and osThreshold > 0 then
+    osButton:Show()
+  else
+    osButton:Hide()
+  end
   local tmogButton = getglobal(frame:GetName() .. "TmogButton")
   if tmogThreshold and tmogThreshold > 0 then
     tmogButton:Show()
@@ -419,6 +425,39 @@ local function IsMasterLooter(playerName)
   return IsRaidAssistant(playerName)
 end
 
+-- Check if message is an SR roll and if current player is a soft reserver
+-- Returns: nil, nil if not SR roll; playerMatched (boolean), hasCustomLogic (boolean) if SR roll
+local function CheckSRRoll(message)
+  local srByStart, srByEnd = string.find(message, "SR by ")
+  if not srByStart then
+    return nil, nil
+  end
+  
+  -- Extract SR section: text between "SR by " and ". X top rolls win." or end of message
+  local srListStart = srByEnd + 1
+  local topRollsStart = string.find(message, "%.%s*%d+%s+top%s+rolls?%s+win", srListStart)
+  local srListEnd = topRollsStart and (topRollsStart - 1) or string.len(message)
+  local srSection = string.sub(message, srListStart, srListEnd)
+  
+  if srSection == "" then
+    Error("Failed to extract SR player list from message")
+    return false, false
+  end
+  
+  -- Remove suffixes like [2 rolls] and (+5), then split by comma and "and"
+  local normalized = string.gsub(srSection, "%s*%[%d+%s+rolls?%]", "")
+  normalized = string.gsub(normalized, "%s*%(%+%d+%)", "")
+  normalized = string.gsub(normalized, "%s+and%s+", ",")
+  
+  for name in gfind(normalized, "([^,]+)") do
+    if Trim(name) == me then
+      local hasCustomLogic = string.find(srSection, "%[%d+%s+rolls?%]") or string.find(srSection, "%(%+%d+%)")
+      return true, hasCustomLogic ~= nil
+    end
+  end
+  return false, nil
+end
+
 -- Parse messages like: "Roll for [item link]: /roll 100(MS) or /roll 99 (OS)" or "Roll for [item link]: /roll 100(MS) or /roll 99 (OS) or /roll 98 (TMOG)"
 -- Returns: itemLink, msThreshold, osThreshold, tmogThreshold (or nil if not found)
 local function ParseRollForMessage(message)
@@ -439,7 +478,7 @@ local function ParseRollForMessage(message)
     msThreshold = tonumber(msMatch)
   end
   
-  local osThreshold = 99
+  local osThreshold = nil
   local _, _, osMatch = string.find(message, "/roll%s+(%d+)%s*%(%s*OS%s*%)")
   if osMatch then
     osThreshold = tonumber(osMatch)
@@ -459,16 +498,25 @@ local function HandleRollForMessage(message, sender)
     return
   end
   
-  -- Detect RollFor winner announcement
+  -- Handle winner announcement
   if string.find(message, "rolled the .-highest.*for") or string.find(message, "No one rolled for") then
     Debug("Detected winner announcement, clearing RollFor frames")
     ClearFrames(.2)
     return
   end
 
-  -- Detect new RollFor
   local itemLink, msThreshold, osThreshold, tmogThreshold = ParseRollForMessage(message)
   if itemLink then
+    local srMatched, hasCustomLogic = CheckSRRoll(message)
+    if srMatched ~= nil then
+      if not srMatched then
+        Debug("Suppressing popup for " .. itemLink .. ". " .. me .. " is not a soft reserver")
+        return
+      elseif hasCustomLogic then
+        Error("Custom rolling logic detected for " .. itemLink .. ", You need to roll for this item manually.")
+        return
+      end
+    end
     Debug("Detected RollFor message for " .. itemLink .. " from " .. sender)
     LoadRollForFrame(itemLink, sender, msThreshold, osThreshold, tmogThreshold)
   end
