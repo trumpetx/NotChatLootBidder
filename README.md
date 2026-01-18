@@ -18,6 +18,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 ```
 
 Chagelog:
+1.9.1
+* Suppressing pop-ups when RollFor SR announcement does not include the player; only showing MS option in this situation
+* Displaying a message when there is custom rolling logic (manual rolling required)
 
 1.9.0
 * Added RollFor support - automatically shows popup frames when master looter announces rolls via RollFor
