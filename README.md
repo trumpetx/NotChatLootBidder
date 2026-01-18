@@ -21,6 +21,7 @@ Chagelog:
 
 1.9.2
 * Canceling the pop-up window win bidding on an item has been canceled
+* Adding dodge/parry/Defense to the `autoignore` filter for "no melee" classes
 
 1.9.1
 * Suppressing pop-ups when RollFor SR announcement does not include the player; only showing MS option in this situation
