@@ -248,7 +248,15 @@ local function FilterOutType(t)
   if noSpells[myClass] and (string.find(t, "mana per 5") or string.find(t, "with spells")) then
     return true
   end
-  if noMelee[myClass] and (string.find(t, "Agility") or string.find(t, "Strength") or string.find(t, "get a critical strike by") or string.find(t, "Atack Power") or string.find(t, "chance to hit by")) then
+  if noMelee[myClass] and (string.find(t, "Agility") 
+    or string.find(t, "Strength") 
+    or string.find(t, "get a critical strike by") 
+    or string.find(t, "Atack Power") 
+    or string.find(t, "chance to hit by")
+    or string.find(t, "dodge an attack")
+    or string.find(t, "parry an attack")
+    or string.find(t, "Defense")
+    or string.find(t, "increases your chance to get a critical strike")) then
     return true
   end
 end
