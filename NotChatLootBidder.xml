@@ -311,7 +311,7 @@
 							<AbsDimension x="215" y="-60"/>
 						</Offset>
 					</Anchor>
-				</Anchors>>
+				</Anchors>
 			</EditBox>
 			<EditBox name="$parentNote" inherits="InputBoxTemplate" letters="120" autofocus="false" text="'/bid' to toggle this frame">
 				<Layers>
@@ -336,7 +336,7 @@
 							<AbsDimension x="50" y="-95"/>
 						</Offset>
 					</Anchor>
-				</Anchors>>
+				</Anchors>
 			</EditBox>
       <Frame name="$parentSpec" inherits="UIDropDownMenuTemplate">
         <Layers>
