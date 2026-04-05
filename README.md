@@ -19,6 +19,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.9.3
+* Fixing item textures on Turtle (1.18.1 Addon API change)
+
 1.9.2
 * Canceling the pop-up window win bidding on an item has been canceled
 * Adding dodge/parry/Defense to the `autoignore` filter for "no melee" classes
