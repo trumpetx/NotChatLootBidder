@@ -299,8 +299,9 @@ local function LoadBidFrame(item, masterLooter, minimumBid, mode)
   local _, _ , itemKey = string.find(item, "(item:%d+:%d+:%d+:%d+)")
   -- Wrath API
   local itemName, itemLinkInfo, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture = GetItemInfo(itemKey)
-  if itemTexture == nil then
-    -- Vanilla API has no itemLevel; shift all values above itemRarity left
+  if itemTexture == nil or turtle then
+    -- Vanilla API has no itemLevel; Turtle API returns itemValue instead (ignored here)
+    -- Shift all values above itemRarity left
     itemTexture = itemEquipLoc
     itemEquipLoc = itemStackCount
     itemStackCount = itemSubType
