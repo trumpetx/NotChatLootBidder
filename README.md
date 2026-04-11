@@ -19,6 +19,9 @@ This addon allows the pop-up of loot frames which interact with the [ChatLootBid
 
 Chagelog:
 
+1.9.4
+* Fixing item textures on Turtle for Roll Frames (same fix as 1.9.3)
+
 1.9.3
 * Fixing item textures on Turtle (1.18.1 Addon API change)
 
